@@ -11,6 +11,15 @@
         ],
         "createdAt": "2026-11-17T03:50:32.900Z",
         "reason": "brilho azul do titulo aprovado pelo usuario no portfolio (mockup v20); reaproveitado de proposito para manter a marca"
+      },
+      {
+        "rule": "gradient-text",
+        "value": "*",
+        "files": [
+          "public/index.html"
+        ],
+        "createdAt": "2026-11-17T03:53:44.656Z",
+        "reason": "brilho azul do titulo aprovado pelo usuario no portfolio; mesma marca"
       }
     ]
   }
