@@ -1,0 +1,91 @@
+/* inicio.css — página inicial do Agendanov.
+   Mesmo visual do portfólio: branco, traço fino e aquarela azul. As cores ficam aqui no topo. */
+:root {
+  --azul-escuro: #0b5cad;
+  --azul: #2f8fe6;
+  --azul-claro: #38a3f5;
+  --azul-borda: #cfe4f8;
+  --azul-fundo: #e3f1fd;
+  --texto: #0f1b2d;
+  --texto-suave: #3d5a80;
+  --fundo: #ffffff;
+  --fonte: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; overflow-x: clip; }
+body { font-family: var(--fonte); color: var(--texto); background: var(--fundo); line-height: 1.5; overflow-x: clip; }
+a { color: inherit; }
+main, .cabecalho, .rodape { position: relative; z-index: 1; }
+
+/* ---- Manchas de aquarela ---- */
+.mancha { position: fixed; border-radius: 50%; filter: blur(40px); z-index: 0; pointer-events: none; animation: flutuar 14s ease-in-out infinite; }
+.m1 { width: 340px; height: 280px; top: -80px; right: -90px; background: rgba(90, 170, 240, .5); }
+.m2 { width: 280px; height: 240px; top: 45%; left: -120px; background: rgba(120, 195, 250, .4); animation-delay: -5s; animation-duration: 18s; }
+.m3 { width: 260px; height: 220px; bottom: -60px; right: -60px; background: rgba(60, 140, 230, .3); animation-delay: -9s; animation-duration: 16s; }
+@keyframes flutuar { 0%, 100% { transform: translate(0, 0) scale(1); } 33% { transform: translate(-25px, 18px) scale(1.12); } 66% { transform: translate(18px, -14px) scale(.92); } }
+
+/* ---- Cabeçalho ---- */
+.cabecalho { max-width: 1100px; margin: 0 auto; padding: 20px 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.marca { display: flex; align-items: center; gap: 10px; font-size: 1.35rem; text-decoration: none; }
+.marca-icone { width: 36px; height: 36px; color: var(--azul); filter: drop-shadow(0 0 8px rgba(47, 143, 230, .5)); }
+.nome1 { color: var(--texto); font-weight: 600; }
+.nome2 { color: var(--azul-escuro); font-weight: 300; }
+.link-painel { color: var(--texto-suave); text-decoration: none; font-size: .95rem; }
+.link-painel:hover { color: var(--azul-escuro); }
+
+/* ---- Topo ---- */
+.topo { max-width: 1100px; margin: 0 auto; padding: 40px 16px 56px; }
+.topo h1 { font-size: clamp(2rem, 6vw, 3.4rem); line-height: 1.12; max-width: 18ch; }
+.brilho { background: linear-gradient(90deg, var(--azul-escuro), var(--azul-claro), #8fd0ff, var(--azul-claro), var(--azul-escuro));
+  background-size: 300% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: correr 6s linear infinite; }
+@keyframes correr { to { background-position: 300% 0; } }
+.sub { color: var(--texto-suave); margin: 12px 0 22px; max-width: 56ch; }
+
+.btn { display: inline-block; color: #fff; text-decoration: none; padding: 12px 22px; border-radius: 999px; font-weight: 600;
+  background: linear-gradient(90deg, var(--azul-escuro), var(--azul), var(--azul-escuro)); background-size: 200% 100%;
+  animation: correr 4s linear infinite; box-shadow: 0 6px 20px rgba(47, 143, 230, .4); }
+.btn-secundario { display: inline-block; margin-left: 10px; padding: 10px 20px; border-radius: 999px; border: 1.5px solid var(--azul);
+  color: var(--azul-escuro); text-decoration: none; font-weight: 600; background: rgba(255, 255, 255, .6); }
+.btn-secundario:hover { background: var(--azul-fundo); }
+@media (max-width: 600px) { .btn-secundario { margin: 10px 0 0; } }
+
+/* ---- Seções ---- */
+.secao { max-width: 1100px; margin: 0 auto; padding: 36px 16px; scroll-margin-top: 8px; }
+.secao h2 { font-size: clamp(1.5rem, 4vw, 2rem); margin-bottom: 4px; }
+.secao .sub { margin-top: 6px; }
+
+/* ---- Vantagens ---- */
+.vantagens { list-style: none; display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); margin-top: 20px; }
+.vantagens li { display: flex; flex-direction: column; gap: 6px; background: rgba(255, 255, 255, .85); border: 1px solid var(--azul-borda);
+  border-radius: 16px; padding: 18px; }
+.vantagens svg { width: 36px; height: 36px; color: var(--azul); }
+.vantagens span { color: var(--texto-suave); font-size: .95rem; }
+
+/* ---- Demonstrações ---- */
+.demos { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); margin-top: 8px; }
+.demo { --cor-demo: var(--azul); display: flex; flex-direction: column; gap: 6px; text-decoration: none; background: #fff;
+  border: 1px solid var(--azul-borda); border-top: 4px solid var(--cor-demo); border-radius: 16px; padding: 18px;
+  box-shadow: 0 8px 30px rgba(47, 143, 230, .15); transition: transform .3s, box-shadow .3s; }
+.demo:hover { transform: translateY(-4px); box-shadow: 0 14px 36px rgba(47, 143, 230, .28); }
+.demo svg { width: 38px; height: 38px; color: var(--cor-demo); }
+.demo strong { font-size: 1.1rem; }
+.demo span { color: var(--texto-suave); font-size: .95rem; }
+.demo em { margin-top: 8px; font-style: normal; font-weight: 600; color: var(--azul-escuro); }
+
+/* ---- Como funciona ---- */
+.passos { list-style: none; display: grid; gap: 14px; margin-top: 16px; }
+.passos li { display: flex; align-items: center; gap: 14px; }
+.passos b { flex: none; width: 38px; height: 38px; display: grid; place-items: center; border-radius: 50%;
+  border: 1.5px solid var(--azul); color: var(--azul-escuro); background: rgba(255, 255, 255, .85); }
+
+/* ---- Final e rodapé ---- */
+.final { text-align: center; }
+.final .sub { margin-left: auto; margin-right: auto; }
+.rodape { text-align: center; padding: 28px 16px 36px; color: var(--texto-suave); font-size: .9rem; display: grid; gap: 6px; }
+.rodape a { color: var(--azul-escuro); }
+
+/* ---- Movimento reduzido: mantém as cores, desliga o que se mexe ---- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}

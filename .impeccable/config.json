@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "gradient-text",
+        "value": "*",
+        "files": [
+          "public/css/inicio.css"
+        ],
+        "createdAt": "2026-11-17T03:50:32.900Z",
+        "reason": "brilho azul do titulo aprovado pelo usuario no portfolio (mockup v20); reaproveitado de proposito para manter a marca"
+      }
+    ]
+  }
+}

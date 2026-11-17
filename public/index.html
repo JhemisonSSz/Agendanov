@@ -3,15 +3,111 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Agenda Fácil | Agendamento online para o seu negócio</title>
-  <link rel="stylesheet" href="/css/style.css">
+  <title>Agendanov | Agendamento online pelo WhatsApp</title>
+  <meta name="description" content="Agendanov: site de agendamento online para barbearias, salões, manicures e clínicas. O cliente marca o horário sozinho e a confirmação chega no WhatsApp.">
+  <link rel="stylesheet" href="/css/inicio.css">
 </head>
 <body>
-  <!-- Troque por sua página de vendas: planos, preços, demonstração e contato -->
-  <div class="tela-centro">
-    <h1>Agenda Fácil</h1>
-    <p class="muted">Agendamento online para barbearias, salões, pet shops, clínicas e academias.</p>
-    <p><a class="btn" href="/painel">Acessar meu painel</a></p>
-  </div>
+  <div class="mancha m1"></div>
+  <div class="mancha m2"></div>
+  <div class="mancha m3"></div>
+
+  <header class="cabecalho">
+    <a class="marca" href="/" aria-label="Agendanov, início">
+      <svg class="marca-icone" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="4" y="6" width="24" height="22" rx="4"/><path d="M4 13h24M10 3v6M22 3v6"/><path d="m11 21 4 4 7-8"/>
+      </svg>
+      <span><span class="nome1">Agenda</span><span class="nome2">nov</span></span>
+    </a>
+    <a class="link-painel" href="/painel">Acessar meu painel</a>
+  </header>
+
+  <main>
+    <section class="topo">
+      <h1><span class="brilho">Seu cliente agenda sozinho.</span> Você recebe no WhatsApp.</h1>
+      <p class="sub">Um site de agendamento online para o seu negócio, com painel simples para você cuidar da agenda sem complicação.</p>
+      <p>
+        <a class="btn" href="https://wa.me/5573988045634?text=Ol%C3%A1!%20Vi%20o%20Agendanov%20e%20quero%20agendamento%20online%20no%20meu%20neg%C3%B3cio.">Quero no meu negócio</a>
+        <a class="btn-secundario" href="#demos">Ver funcionando</a>
+      </p>
+    </section>
+
+    <section class="secao" aria-labelledby="vantagens">
+      <h2 id="vantagens">Menos mensagens, mais clientes na agenda</h2>
+      <ul class="vantagens">
+        <li>
+          <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="26" height="20" rx="3"/><path d="M3 11h26"/><circle cx="7" cy="8.5" r=".6"/><circle cx="10" cy="8.5" r=".6"/></svg>
+          <strong>Site próprio do negócio</strong>
+          <span>Seu endereço, suas cores e seus serviços, pronto para divulgar no Instagram.</span>
+        </li>
+        <li>
+          <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="16" cy="16" r="12"/><path d="M16 9v7l5 3"/></svg>
+          <strong>Sem horário duplicado</strong>
+          <span>Quando alguém reserva um horário, ele some para os outros na mesma hora.</span>
+        </li>
+        <li>
+          <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="24" height="18" rx="3"/><path d="M11 28h10M16 23v5M9 17l4-4 3 3 6-6"/></svg>
+          <strong>Painel simples</strong>
+          <span>Agenda do dia, serviços, profissionais e horários de funcionamento em um só lugar.</span>
+        </li>
+        <li>
+          <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="14" width="20" height="14" rx="3"/><path d="M11 14V9a5 5 0 0 1 10 0v5"/></svg>
+          <strong>Folgas e bloqueios</strong>
+          <span>Travou um horário, tirou folga ou foi almoçar? Bloqueie em dois toques.</span>
+        </li>
+      </ul>
+    </section>
+
+    <section class="secao" id="demos" aria-labelledby="titulo-demos">
+      <h2 id="titulo-demos">Experimente como cliente</h2>
+      <p class="sub">Escolha um negócio e faça um agendamento de teste. É de mentira, mas funciona de verdade.</p>
+      <div class="demos">
+        <a class="demo" href="/demo-barbearia" style="--cor-demo:#1e3a8a">
+          <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="23" r="4"/><circle cx="23" cy="23" r="4"/><path d="m12 20 14-14M20 20 6 6"/></svg>
+          <strong>Barbearia</strong>
+          <span>Corte, barba, sobrancelha</span>
+          <em>Testar agendamento →</em>
+        </a>
+        <a class="demo" href="/demo-manicure" style="--cor-demo:#db2777">
+          <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 28V13a4 4 0 0 1 8 0v15z"/><path d="M12 19h8M14 4l2 4 2-4"/></svg>
+          <strong>Manicure</strong>
+          <span>Mão, pé, gel</span>
+          <em>Testar agendamento →</em>
+        </a>
+        <a class="demo" href="/demo-lash" style="--cor-demo:#9d6b9f">
+          <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 18c4-6 9-8 13-8s9 2 13 8c-4 6-9 8-13 8S7 24 3 18z"/><circle cx="16" cy="18" r="4"/><path d="M6 12 4 9M12 9l-1-4M20 9l1-4M26 12l2-3"/></svg>
+          <strong>Lash designer</strong>
+          <span>Fio a fio, volume, lifting</span>
+          <em>Testar agendamento →</em>
+        </a>
+        <a class="demo" href="/demo-salao" style="--cor-demo:#b45309">
+          <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 4h16v6a8 8 0 0 1-16 0z"/><path d="M16 18v6M11 28h10M12 24h8"/></svg>
+          <strong>Salão de beleza</strong>
+          <span>Corte, escova, coloração</span>
+          <em>Testar agendamento →</em>
+        </a>
+      </div>
+    </section>
+
+    <section class="secao" aria-labelledby="como">
+      <h2 id="como">Como funciona para o seu cliente</h2>
+      <ol class="passos">
+        <li><b>1</b><span>Escolhe o serviço e o profissional.</span></li>
+        <li><b>2</b><span>Vê só os horários livres e marca o dele.</span></li>
+        <li><b>3</b><span>Toca em um botão e a confirmação chega no WhatsApp.</span></li>
+      </ol>
+    </section>
+
+    <section class="secao final">
+      <h2>Gostou? Vamos colocar no seu negócio.</h2>
+      <p class="sub">Me chama no WhatsApp que eu mostro como fica com o seu nome e as suas cores.</p>
+      <p><a class="btn" href="https://wa.me/5573988045634?text=Ol%C3%A1!%20Vi%20o%20Agendanov%20e%20quero%20agendamento%20online%20no%20meu%20neg%C3%B3cio.">Me chama no WhatsApp</a></p>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    <p>Agendanov · feito por <a href="https://jhemisontech.web.app">NOVAA On</a></p>
+    <p><a href="/painel">Acessar meu painel</a></p>
+  </footer>
 </body>
 </html>

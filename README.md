@@ -1,4 +1,4 @@
-# Agenda Fácil: sistema de agendamento para vários negócios
+# Agendanov: sistema de agendamento para vários negócios
 
 Um código só e um projeto Firebase só, atendendo vários clientes (multi-tenant).
 Feito em HTML, CSS e JS puro (ES modules), com Firestore, Authentication e Hosting.
@@ -85,6 +85,26 @@ não conseguem pegar o mesmo horário. Um serviço de 60 min com intervalo de 30
    ```bash
    firebase deploy
    ```
+
+## Demonstrações
+
+A página inicial (`/`) tem 4 negócios de teste para o visitante experimentar:
+`/demo-barbearia`, `/demo-manicure`, `/demo-lash` e `/demo-salao`.
+
+- Os dados deles ficam em `public/js/demos.js` (serviços, preços, cores).
+- No `/admin`, o botão **Criar/atualizar demonstrações** grava os 4 no banco (rodar de novo não duplica).
+- O botão **Limpar agendamentos de teste** apaga os agendamentos, horários ocupados e bloqueios
+  **só das demonstrações**, nunca de clientes reais.
+- O botão de WhatsApp das demonstrações manda para o número do dono do Agendanov
+  (`WHATS_NOVAA` em `demos.js`).
+
+## Testes
+
+```bash
+npm test
+```
+
+Roda os testes das funções puras (`demos.js`, mensagens do `utils.js`) e confere a página inicial.
 
 ## Observações
 
