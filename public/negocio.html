@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agendamento online</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div id="carregando" class="tela-centro"><p class="muted">Carregando...</p></div>
+
+  <div id="indisponivel" class="tela-centro oculto">
+    <h1>Página indisponível</h1>
+    <p class="muted">Este negócio não foi encontrado ou está temporariamente fora do ar.</p>
+  </div>
+
+  <div id="app" class="oculto">
+    <header class="topo">
+      <div class="topo-conteudo">
+        <img id="logo" class="logo oculto" alt="">
+        <div>
+          <h1 id="nome"></h1>
+          <p id="endereco"></p>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <div id="etapas">
+        <section class="cartao">
+          <h2>1. Escolha o serviço</h2>
+          <div id="lista-servicos" class="opcoes"></div>
+        </section>
+
+        <section class="cartao">
+          <h2>2. Escolha o profissional</h2>
+          <div id="lista-profissionais" class="opcoes"></div>
+        </section>
+
+        <section class="cartao">
+          <h2>3. Escolha o dia e o horário</h2>
+          <input type="date" id="data" aria-label="Dia">
+          <div id="lista-horarios" class="horarios"></div>
+        </section>
+
+        <section class="cartao">
+          <h2>4. Seus dados</h2>
+          <form id="form-agendar">
+            <label>Nome
+              <input id="cliente-nome" required maxlength="80" autocomplete="name">
+            </label>
+            <label>WhatsApp
+              <input id="cliente-telefone" required type="tel" maxlength="20"
+                     placeholder="(11) 99999-9999" autocomplete="tel">
+            </label>
+            <p id="resumo" class="resumo">Escolha serviço, profissional e horário.</p>
+            <p id="erro-agendar" class="erro"></p>
+            <button type="submit" class="btn btn-bloco" id="btn-agendar" disabled>Confirmar agendamento</button>
+          </form>
+        </section>
+      </div>
+
+      <section id="sucesso" class="cartao sucesso oculto">
+        <div class="icone">✅</div>
+        <h2>Agendamento confirmado!</h2>
+        <p id="sucesso-texto"></p>
+        <p><a id="sucesso-whats" class="btn btn-whats" target="_blank" rel="noopener">Avisar pelo WhatsApp</a></p>
+        <p><button type="button" class="btn btn-sec" onclick="location.reload()">Fazer outro agendamento</button></p>
+      </section>
+    </main>
+
+    <a id="whats-flutuante" class="whats-flutuante oculto" target="_blank" rel="noopener">WhatsApp</a>
+  </div>
+
+  <script type="module" src="/js/negocio.js"></script>
+</body>
+</html>

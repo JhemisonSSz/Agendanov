@@ -1,0 +1,14 @@
+# Cache do Firebase (gerado a cada deploy)
+.firebase/
+
+# Logs do Firebase e do npm
+*-debug.log
+*.log
+
+# Dependências, caso um dia use npm
+node_modules/
+
+# Arquivos do sistema
+Thumbs.db
+desktop.ini
+.DS_Store

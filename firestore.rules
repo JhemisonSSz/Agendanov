@@ -1,0 +1,71 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+
+    // ---------- Funções auxiliares ----------
+    function logado() { return request.auth != null; }
+    function perfil() {
+      return get(/databases/$(db)/documents/usuarios/$(request.auth.uid)).data;
+    }
+    function ehSuper() { return logado() && perfil().papel == 'superadmin'; }
+    function ehDono(id) { return logado() && perfil().negocioId == id; }
+    function podeGerenciar(id) { return ehSuper() || ehDono(id); }
+
+    // ---------- Usuários (quem acessa painel/admin) ----------
+    match /usuarios/{uid} {
+      allow read: if logado() && (request.auth.uid == uid || ehSuper());
+      allow write: if ehSuper();
+    }
+
+    // ---------- Negócios ----------
+    match /negocios/{id} {
+      function negocioAtivo() {
+        return get(/databases/$(db)/documents/negocios/$(id)).data.ativo == true;
+      }
+
+      // Qualquer um abre a página de UM negócio, mas só você lista todos
+      allow get: if true;
+      allow list: if ehSuper();
+      allow create, delete: if ehSuper();
+      // O dono edita o próprio negócio, mas não pode se reativar nem trocar de plano
+      // Serviços e profissionais ficam em arrays aqui dentro (economiza leituras)
+      allow update: if ehSuper() || (ehDono(id)
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['ativo', 'plano'])
+        && request.resource.data.get('servicos', []).size() <= 100
+        && request.resource.data.get('profissionais', []).size() <= 30);
+
+      // Folgas e horários bloqueados (só o dono vê e mexe)
+      match /bloqueios/{bid} {
+        allow read, write: if podeGerenciar(id);
+      }
+
+      // Dados do cliente: PRIVADO. O ID do documento é o 1º horário (slot).
+      match /agendamentos/{slot} {
+        allow read, update, delete: if podeGerenciar(id);
+        allow create: if negocioAtivo()
+          && request.resource.data.status == 'confirmado'
+          && request.resource.data.clienteNome is string
+          && request.resource.data.clienteNome.size() > 0
+          && request.resource.data.clienteNome.size() <= 80
+          && request.resource.data.clienteTelefone is string
+          && request.resource.data.clienteTelefone.size() <= 20
+          && request.resource.data.slots is list
+          && request.resource.data.slots.size() > 0
+          && request.resource.data.slots.size() <= 16
+          && request.resource.data.slots[0] == slot
+          && existsAfter(/databases/$(db)/documents/negocios/$(id)/ocupados/$(slot));
+      }
+
+      // Só marca "horário pego", sem dados pessoais. Público para leitura.
+      // Não existe regra de update: um horário ocupado nunca é sobrescrito.
+      match /ocupados/{slot} {
+        allow read: if true;
+        allow delete: if podeGerenciar(id);
+        // O dono também pode criar direto (para bloquear horários e folgas)
+        allow create: if podeGerenciar(id) || (negocioAtivo()
+          && request.resource.data.agendamentoId is string
+          && slot in getAfter(/databases/$(db)/documents/negocios/$(id)/agendamentos/$(request.resource.data.agendamentoId)).data.slots);
+      }
+    }
+  }
+}

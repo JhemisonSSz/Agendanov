@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel do negócio</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- LOGIN -->
+  <div id="tela-login" class="tela-centro oculto">
+    <form id="form-login" class="cartao login">
+      <h1>Painel</h1>
+      <p class="muted">Entre para gerenciar sua agenda.</p>
+      <label>E-mail <input type="email" id="email" required autocomplete="username"></label>
+      <label>Senha <input type="password" id="senha" required autocomplete="current-password"></label>
+      <p id="erro-login" class="erro"></p>
+      <button class="btn btn-bloco" type="submit">Entrar</button>
+      <button class="btn btn-sec btn-bloco" type="button" id="btn-esqueci" style="margin-top:8px">Esqueci minha senha</button>
+    </form>
+  </div>
+
+  <!-- PAINEL -->
+  <div id="tela-painel" class="oculto">
+    <header class="barra">
+      <div class="barra-conteudo">
+        <strong id="painel-nome"></strong>
+        <div class="barra-acoes">
+          <a id="link-site" class="btn btn-sec btn-pequeno" target="_blank" rel="noopener">Ver meu site</a>
+          <button id="btn-sair" class="btn btn-sec btn-pequeno" type="button">Sair</button>
+        </div>
+      </div>
+    </header>
+
+    <nav class="abas">
+      <div class="abas-conteudo">
+        <button class="aba" data-aba="agenda" type="button">Agenda</button>
+        <button class="aba" data-aba="bloqueios" type="button">Folgas e bloqueios</button>
+        <button class="aba" data-aba="servicos" type="button">Serviços</button>
+        <button class="aba" data-aba="profissionais" type="button">Profissionais</button>
+        <button class="aba" data-aba="config" type="button">Configurações</button>
+      </div>
+    </nav>
+
+    <main class="container largo">
+      <div id="aviso-inativo" class="aviso oculto">
+        Seu site está fora do ar no momento. Fale com o suporte para reativar.
+      </div>
+
+      <!-- AGENDA -->
+      <section id="aba-agenda" class="aba-conteudo">
+        <div class="cartao">
+          <div class="linha-form">
+            <label>Dia <input type="date" id="agenda-data"></label>
+          </div>
+          <p id="agenda-resumo" class="muted"></p>
+          <div id="lista-agenda"></div>
+        </div>
+      </section>
+
+      <!-- FOLGAS E BLOQUEIOS -->
+      <section id="aba-bloqueios" class="aba-conteudo oculto">
+        <div class="cartao">
+          <h2>Bloquear horários ou folga</h2>
+          <p class="muted">Os horários bloqueados somem do site. Agendamentos que já existem continuam marcados.</p>
+          <form id="form-bloqueio">
+            <div class="linha-form">
+              <label>Profissional <select name="profissional"></select></label>
+              <label>Motivo <input name="motivo" maxlength="60" placeholder="Folga, almoço, feriado..."></label>
+            </div>
+            <div class="linha-form">
+              <label>De <input type="date" name="dataInicio" required></label>
+              <label>Até <input type="date" name="dataFim" required></label>
+            </div>
+            <label class="check"><input type="checkbox" name="diaInteiro" checked> Dia inteiro</label>
+            <div class="linha-form oculto" id="bloqueio-horas">
+              <label>Das <input type="time" name="horaInicio" value="12:00"></label>
+              <label>Até <input type="time" name="horaFim" value="13:00"></label>
+            </div>
+            <p id="bloqueio-msg" class="muted"></p>
+            <button class="btn" type="submit">Bloquear</button>
+          </form>
+        </div>
+        <div class="cartao">
+          <h2>Próximos bloqueios</h2>
+          <div id="lista-bloqueios"></div>
+        </div>
+      </section>
+
+      <!-- SERVIÇOS -->
+      <section id="aba-servicos" class="aba-conteudo oculto">
+        <div class="cartao">
+          <h2>Cadastrar serviço</h2>
+          <form id="form-servico">
+            <div class="linha-form">
+              <label>Nome <input name="nome" required maxlength="60" placeholder="Corte masculino"></label>
+              <label>Duração (min) <input name="duracao" type="number" min="5" step="5" required placeholder="30"></label>
+              <label>Preço (R$) <input name="preco" type="number" min="0" step="0.01" required placeholder="45.00"></label>
+            </div>
+            <button class="btn" type="submit">Adicionar</button>
+            <button class="btn btn-sec oculto" type="button" data-cancelar-edicao>Cancelar edição</button>
+          </form>
+        </div>
+        <div class="cartao">
+          <h2>Serviços</h2>
+          <div id="lista-servicos"></div>
+        </div>
+      </section>
+
+      <!-- PROFISSIONAIS -->
+      <section id="aba-profissionais" class="aba-conteudo oculto">
+        <div class="cartao">
+          <h2>Cadastrar profissional</h2>
+          <form id="form-profissional">
+            <div class="linha-form">
+              <label>Nome <input name="nome" required maxlength="60" placeholder="Ana"></label>
+            </div>
+            <button class="btn" type="submit">Adicionar</button>
+            <button class="btn btn-sec oculto" type="button" data-cancelar-edicao>Cancelar edição</button>
+          </form>
+        </div>
+        <div class="cartao">
+          <h2>Profissionais</h2>
+          <div id="lista-profissionais"></div>
+        </div>
+      </section>
+
+      <!-- CONFIGURAÇÕES -->
+      <section id="aba-config" class="aba-conteudo oculto">
+        <form id="form-config">
+          <div class="cartao">
+            <h2>Dados do negócio</h2>
+            <div class="linha-form">
+              <label>Nome <input name="nome" required maxlength="80"></label>
+              <label>WhatsApp <input name="whatsapp" type="tel" placeholder="(11) 99999-9999"></label>
+            </div>
+            <label>Endereço <input name="endereco" maxlength="150"></label>
+            <label>URL da logo <input name="logoUrl" type="url" placeholder="https://..."></label>
+            <div class="linha-form">
+              <label>Cor principal <input name="corPrimaria" type="color"></label>
+              <label>Cor do topo <input name="corSecundaria" type="color"></label>
+            </div>
+          </div>
+          <div class="cartao">
+            <h2>Horário de funcionamento</h2>
+            <label>Intervalo entre horários
+              <select name="intervaloMinutos">
+                <option value="15">15 minutos</option>
+                <option value="20">20 minutos</option>
+                <option value="30">30 minutos</option>
+                <option value="45">45 minutos</option>
+                <option value="60">1 hora</option>
+              </select>
+            </label>
+            <div id="dias-semana"></div>
+          </div>
+          <p id="config-msg" class="muted"></p>
+          <button class="btn" type="submit">Salvar configurações</button>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <script type="module" src="/js/painel.js"></script>
+</body>
+</html>
