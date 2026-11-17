@@ -72,6 +72,7 @@ function renderCabecalho() {
   const n = estado.negocio;
   document.title = `${n.nome} | Agendamento online`;
   U.aplicarTema(n);
+  $('faixa-demo').classList.toggle('oculto', n.demo !== true);
   $('nome').textContent = n.nome;
   $('endereco').textContent = n.endereco || '';
   if (n.logoUrl) {

@@ -4,9 +4,10 @@ import {
   getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import {
-  collection, getDocs, doc, getDoc, setDoc, updateDoc, serverTimestamp
+  collection, getDocs, doc, getDoc, setDoc, updateDoc, serverTimestamp, writeBatch
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import * as U from './utils.js';
+import { documentosDemo, SLUGS_DEMO } from './demos.js';
 
 const $ = id => document.getElementById(id);
 
@@ -112,6 +113,56 @@ form.addEventListener('submit', async e => {
     btn.disabled = false;
   }
 });
+
+// ---------- Demonstrações ----------
+// Cria (ou recria) os 4 negócios de demonstração. Rodar duas vezes não duplica nada,
+// porque o ID do documento é sempre o mesmo.
+async function criarDemos() {
+  for (const { slug, dados } of documentosDemo()) {
+    await setDoc(doc(db, 'negocios', slug), { ...dados, criadoEm: serverTimestamp() });
+  }
+}
+
+// Apaga os agendamentos, horários ocupados e bloqueios SÓ das demonstrações.
+// Usa SLUGS_DEMO e nunca a lista de negócios, para não tocar em clientes reais.
+async function limparDemos() {
+  let total = 0;
+  for (const slug of SLUGS_DEMO) {
+    for (const sub of ['agendamentos', 'ocupados', 'bloqueios']) {
+      const docs = (await getDocs(collection(db, 'negocios', slug, sub))).docs;
+      for (let i = 0; i < docs.length; i += 450) {
+        const lote = writeBatch(db);
+        docs.slice(i, i + 450).forEach(d => lote.delete(d.ref));
+        await lote.commit();
+      }
+      total += docs.length;
+    }
+  }
+  return total;
+}
+
+async function executarDemo(botao, trabalho, mensagemOk) {
+  const msg = $('demos-msg');
+  botao.disabled = true;
+  msg.textContent = 'Trabalhando...';
+  try {
+    const resultado = await trabalho();
+    msg.textContent = mensagemOk(resultado);
+    carregarNegocios();
+  } catch (err) {
+    console.error(err);
+    msg.textContent = 'Erro: ' + (err.message || err);
+  } finally {
+    botao.disabled = false;
+  }
+}
+
+$('btn-criar-demos').onclick = e => executarDemo(e.currentTarget, criarDemos, () => 'Demonstrações prontas.');
+
+$('btn-limpar-demos').onclick = e => {
+  if (!confirm('Apagar todos os agendamentos e bloqueios das 4 demonstrações?')) return;
+  executarDemo(e.currentTarget, limparDemos, n => `${n} registros apagados.`);
+};
 
 // ---------- Listar e ativar/desativar ----------
 async function carregarNegocios() {
