@@ -140,6 +140,22 @@ export function linkWhats(numero, texto = '') {
   return `https://wa.me/${n}?text=${encodeURIComponent(texto)}`;
 }
 
+// Mensagem que o cliente manda ao negócio logo depois de agendar
+export function mensagemAgendado(negocio, nomeCliente, texto) {
+  if (negocio.demo) {
+    return `Olá! Sou ${nomeCliente} e testei a demonstração do Agendanov (${negocio.nome}): ${texto} Quero saber mais!`;
+  }
+  return `Olá! Sou ${nomeCliente} e acabei de agendar pelo site: ${texto}`;
+}
+
+// Mensagem do botão flutuante de WhatsApp
+export function mensagemContato(negocio) {
+  if (negocio.demo) {
+    return `Olá! Vi a demonstração do Agendanov (${negocio.nome}) e quero saber mais.`;
+  }
+  return `Olá! Vim pelo site da ${negocio.nome}.`;
+}
+
 export function aplicarTema(negocio) {
   const raiz = document.documentElement.style;
   if (negocio.cores?.primaria) raiz.setProperty('--cor-primaria', negocio.cores.primaria);

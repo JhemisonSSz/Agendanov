@@ -80,7 +80,7 @@ function renderCabecalho() {
     $('logo').classList.remove('oculto');
   }
   if (n.whatsapp) {
-    $('whats-flutuante').href = U.linkWhats(n.whatsapp, `Olá! Vim pelo site da ${n.nome}.`);
+    $('whats-flutuante').href = U.linkWhats(n.whatsapp, U.mensagemContato(n));
     $('whats-flutuante').classList.remove('oculto');
   }
 }
@@ -227,8 +227,7 @@ function mostrarSucesso(nome) {
   $('sucesso-texto').textContent = texto;
 
   if (negocio.whatsapp) {
-    $('sucesso-whats').href = U.linkWhats(negocio.whatsapp,
-      `Olá! Sou ${nome} e acabei de agendar pelo site: ${texto}`);
+    $('sucesso-whats').href = U.linkWhats(negocio.whatsapp, U.mensagemAgendado(negocio, nome, texto));
   } else {
     $('sucesso-whats').classList.add('oculto');
   }
