@@ -12,6 +12,12 @@ const HORARIO_DEMO = {
   qui: ['09:00', '19:00'], sex: ['09:00', '19:00'], sab: ['09:00', '19:00']
 };
 
+// Proteção: só mexe no endereço de uma demonstração se ele está livre ou já é demonstração.
+// Assim, um cliente real cadastrado por engano como "demo-salao" nunca é sobrescrito nem limpo.
+export function podeGravarDemo(documentoExistente) {
+  return !documentoExistente || documentoExistente.demo === true;
+}
+
 function demo(slug, nome, cores, servicos, profissionais) {
   return {
     slug,

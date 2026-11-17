@@ -7,7 +7,7 @@ import {
   collection, getDocs, doc, getDoc, setDoc, updateDoc, serverTimestamp, writeBatch
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import * as U from './utils.js';
-import { documentosDemo, SLUGS_DEMO } from './demos.js';
+import { documentosDemo, SLUGS_DEMO, podeGravarDemo } from './demos.js';
 
 const $ = id => document.getElementById(id);
 
@@ -117,10 +117,18 @@ form.addEventListener('submit', async e => {
 // ---------- Demonstrações ----------
 // Cria (ou recria) os 4 negócios de demonstração. Rodar duas vezes não duplica nada,
 // porque o ID do documento é sempre o mesmo.
+// Se o endereço já é de um negócio REAL, pula e avisa (nunca sobrescreve cliente).
+// Mantém a data de criação original quando a demonstração já existia.
 async function criarDemos() {
+  const pulados = [];
   for (const { slug, dados } of documentosDemo()) {
-    await setDoc(doc(db, 'negocios', slug), { ...dados, criadoEm: serverTimestamp() });
+    const ref = doc(db, 'negocios', slug);
+    const atual = await getDoc(ref);
+    if (!podeGravarDemo(atual.exists() ? atual.data() : null)) { pulados.push(slug); continue; }
+    const criadoEm = atual.exists() && atual.data().criadoEm ? atual.data().criadoEm : serverTimestamp();
+    await setDoc(ref, { ...dados, criadoEm });
   }
+  return pulados;
 }
 
 // Apaga os agendamentos, horários ocupados e bloqueios SÓ das demonstrações.
@@ -128,6 +136,8 @@ async function criarDemos() {
 async function limparDemos() {
   let total = 0;
   for (const slug of SLUGS_DEMO) {
+    const atual = await getDoc(doc(db, 'negocios', slug));
+    if (!podeGravarDemo(atual.exists() ? atual.data() : null)) continue; // é cliente real: não toca
     for (const sub of ['agendamentos', 'ocupados', 'bloqueios']) {
       const docs = (await getDocs(collection(db, 'negocios', slug, sub))).docs;
       for (let i = 0; i < docs.length; i += 450) {
@@ -157,7 +167,9 @@ async function executarDemo(botao, trabalho, mensagemOk) {
   }
 }
 
-$('btn-criar-demos').onclick = e => executarDemo(e.currentTarget, criarDemos, () => 'Demonstrações prontas.');
+$('btn-criar-demos').onclick = e => executarDemo(e.currentTarget, criarDemos, pulados => pulados.length
+  ? `Prontas, exceto ${pulados.join(', ')}: esse endereço já é de um cliente real e foi preservado.`
+  : 'Demonstrações prontas.');
 
 $('btn-limpar-demos').onclick = e => {
   if (!confirm('Apagar todos os agendamentos e bloqueios das 4 demonstrações?')) return;

@@ -27,6 +27,12 @@ async function iniciar() {
     if (!snap.exists() || snap.data().ativo !== true) return mostrarIndisponivel();
     estado.negocio = snap.data();
 
+    // Demonstração nunca abre num dia sem horário (ex.: à noite): já vai para o próximo dia com vaga
+    if (estado.negocio.demo === true) {
+      const menor = Math.min(...(estado.negocio.servicos || []).map(s => Number(s.duracao)).filter(n => n > 0), 30);
+      estado.data = U.proximaDataComHorario(estado.negocio, menor);
+    }
+
     // Serviços e profissionais ficam dentro do próprio documento do negócio:
     // a página inteira carrega com 1 leitura só.
     estado.servicos = paraLista(estado.negocio.servicos);

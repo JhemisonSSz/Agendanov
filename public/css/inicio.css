@@ -13,8 +13,8 @@
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; overflow-x: clip; }
-body { font-family: var(--fonte); color: var(--texto); background: var(--fundo); line-height: 1.5; overflow-x: clip; }
+html { scroll-behavior: smooth; overflow-x: hidden; overflow-x: clip; } /* hidden = reserva para Safari antigo */
+body { font-family: var(--fonte); color: var(--texto); background: var(--fundo); line-height: 1.5; overflow-x: hidden; overflow-x: clip; }
 a { color: inherit; }
 main, .cabecalho, .rodape { position: relative; z-index: 1; }
 
@@ -44,7 +44,7 @@ main, .cabecalho, .rodape { position: relative; z-index: 1; }
 .sub { color: var(--texto-suave); margin: 12px 0 22px; max-width: 56ch; }
 
 .btn { display: inline-block; color: #fff; text-decoration: none; padding: 12px 22px; border-radius: 999px; font-weight: 600;
-  background: linear-gradient(90deg, var(--azul-escuro), var(--azul), var(--azul-escuro)); background-size: 200% 100%;
+  background: linear-gradient(90deg, var(--azul-escuro), #1d78cf, var(--azul-escuro)); background-size: 200% 100%;
   animation: correr 4s linear infinite; box-shadow: 0 6px 20px rgba(47, 143, 230, .4); }
 .btn-secundario { display: inline-block; margin-left: 10px; padding: 10px 20px; border-radius: 999px; border: 1.5px solid var(--azul);
   color: var(--azul-escuro); text-decoration: none; font-weight: 600; background: rgba(255, 255, 255, .6); }

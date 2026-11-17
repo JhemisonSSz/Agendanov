@@ -1,4 +1,5 @@
 // Funções puras compartilhadas entre site público, painel e admin.
+import { SLUGS_DEMO } from './demos.js';
 
 export const DIAS = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sab'];
 export const NOMES_DIAS = {
@@ -14,6 +15,9 @@ export const HORARIO_PADRAO = {
 };
 
 export const SLUGS_RESERVADOS = ['painel', 'admin', 'css', 'js', 'index', 'negocio'];
+
+// Os endereços das demonstrações também são reservados: cliente real não pode usá-los
+SLUGS_RESERVADOS.push(...SLUGS_DEMO);
 
 // Descobre qual negócio abrir: /barbearia-do-ze  ou  negocio.html?n=barbearia-do-ze
 export function obterSlug() {
@@ -82,6 +86,21 @@ export function formatarData(iso) {
 // ID único de um horário: profissional + dia + hora  →  "ana_2026-11-20_1430"
 export function idSlot(profissionalId, dataISO, hora) {
   return `${profissionalId}_${dataISO}_${hora.replace(':', '')}`;
+}
+
+// Primeira data (hoje ou nos próximos dias) em que o serviço tem horário livre.
+// A demonstração usa isso para nunca abrir num dia vazio (ex.: à noite).
+// Se nada servir nos próximos `maxDias`, devolve hoje.
+export function proximaDataComHorario(negocio, duracaoMin, agora = new Date(), maxDias = 14) {
+  const d = new Date(agora);
+  const hoje = hojeISO();
+  const iso = dt => `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+  for (let i = 0; i < maxDias; i++) {
+    const dataISO = iso(d);
+    if (horariosDisponiveis(negocio, dataISO, duracaoMin, new Set(), agora).length) return dataISO;
+    d.setDate(d.getDate() + 1);
+  }
+  return hoje;
 }
 
 // Todos os horários de início do dia, conforme o horário de funcionamento
