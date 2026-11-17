@@ -64,6 +64,7 @@ body {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
   gap: 8px; margin-top: 12px;
 }
+.horarios > p { grid-column: 1 / -1; } /* mensagens ocupam a linha toda, não uma coluna de 80px */
 .horario {
   padding: 10px; border: 1.5px solid var(--borda); border-radius: 8px;
   background: #fff; cursor: pointer; font: inherit; font-weight: 600; color: inherit;
@@ -73,11 +74,15 @@ body {
 .sucesso { text-align: center; }
 .sucesso .icone { font-size: 2.5rem; }
 
+/* Botão redondo, só com o ícone; o site público ganha espaço embaixo para ele nunca cobrir o conteúdo */
 .whats-flutuante {
-  position: fixed; right: 16px; bottom: 16px; background: #25d366; color: #fff;
-  padding: 12px 18px; border-radius: 999px; font-weight: 600; text-decoration: none;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, .2);
+  position: fixed; right: 16px; bottom: 16px; width: 52px; height: 52px; z-index: 10;
+  display: grid; place-items: center; background: #15803d; color: #fff; border-radius: 50%;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .25);
 }
+.whats-flutuante svg { width: 28px; height: 28px; }
+.whats-flutuante:hover { background: #166534; }
+#app .container { padding-bottom: 88px; }
 
 /* ---------- Formulários ---------- */
 label { display: block; margin-bottom: 12px; font-weight: 500; font-size: .95rem; }
@@ -101,7 +106,7 @@ input:focus, select:focus { outline: none; border-color: var(--cor-primaria); }
 .btn:disabled { opacity: .5; cursor: not-allowed; }
 .btn-sec { background: #fff; color: var(--texto); border: 1.5px solid var(--borda); }
 .btn-perigo { background: #fff; color: var(--perigo); border: 1.5px solid #fecaca; }
-.btn-whats { background: #25d366; }
+.btn-whats { background: #15803d; } /* verde escuro: texto branco com contraste ~5:1 */
 .btn-pequeno { padding: 6px 12px; font-size: .875rem; }
 .btn-bloco { width: 100%; }
 
