@@ -8,7 +8,7 @@ pelo portfólio entender o produto, **testar** e chamar o Jhemison no WhatsApp.
 
 ## Objetivos
 - Explicar em poucos segundos: o cliente agenda sozinho e o negócio recebe no WhatsApp.
-- Deixar testar como cliente em 3 negócios de demonstração: barbearia, manicure e lash designer.
+- Deixar testar como cliente em 4 negócios de demonstração: barbearia, manicure, lash designer e salão de beleza.
 - Levar para o WhatsApp do Jhemison (5573988045634).
 
 ## Fora do escopo
@@ -26,7 +26,7 @@ pelo portfólio entender o produto, **testar** e chamar o Jhemison no WhatsApp.
 - C) Página de vendas com planos: não combina com o jeito de trabalhar (a venda é feita pelo Jhemison).
 
 ## Decisões do Jhemison
-- Abordagem A, com mais de uma demonstração (barbearia, manicure e lash designer).
+- Abordagem A, com mais de uma demonstração (barbearia, manicure, lash designer e salão de beleza).
 - Nas demonstrações, o botão "Enviar no WhatsApp" manda para o WhatsApp do Jhemison.
 - O nome/logo do produto é **Agendanov**.
 - A marca do Jhemison agora é **NOVAA On** (substitui "JhemisonTech"). Neste projeto, nenhum texto
@@ -38,14 +38,14 @@ pelo portfólio entender o produto, **testar** e chamar o Jhemison no WhatsApp.
   e o botão "Quero no meu negócio", que abre o WhatsApp do Jhemison com uma mensagem pronta.
 - Vantagens (4 itens com ícones): site próprio do negócio, sem horário duplicado,
   painel simples (agenda, serviços, profissionais), folgas e bloqueios.
-- "Experimente como cliente": 3 cards (Barbearia, Manicure, Lash Designer), cada um com a cor
+- "Experimente como cliente": 4 cards (Barbearia, Manicure, Lash Designer, Salão de beleza), cada um com a cor
   da demonstração, abrindo `/<slug-da-demo>`.
 - "Como funciona" em 3 passos: você escolhe o serviço → escolhe o horário → a confirmação chega no WhatsApp.
 - Rodapé com o botão do WhatsApp, o link "Acessar meu painel" (que existe hoje) e "feito por NOVAA On",
   com link para o portfólio (por enquanto https://jhemisontech.web.app).
 
 **Demonstrações**
-- 3 documentos em `negocios/`, com `demo: true`, `ativo: true`, `whatsapp` do Jhemison,
+- 4 documentos em `negocios/`, com `demo: true`, `ativo: true`, `whatsapp` do Jhemison,
   cores próprias, de 4 a 6 serviços com preço e duração, de 1 a 2 profissionais fictícios e horário de funcionamento.
 - O `negocio.html` mostra a faixa "Isto é uma demonstração. Agende à vontade." quando `demo: true`.
 - O `/admin` ganha uma seção "Demonstrações" com o botão **"Criar/atualizar demonstrações"**:
@@ -58,7 +58,7 @@ pelo portfólio entender o produto, **testar** e chamar o Jhemison no WhatsApp.
 - Trocar "Agenda Fácil" por "Agendanov" nos títulos e no README.
 - Botão **"Limpar agendamentos de teste"** no `/admin`: apaga `agendamentos` e `ocupados`
   das demonstrações, para a agenda não lotar com o tempo.
-- Slugs: `demo-barbearia`, `demo-manicure`, `demo-lash`.
+- Slugs: `demo-barbearia`, `demo-manicure`, `demo-lash`, `demo-salao`.
 
 ## Restrições
 - HTML, CSS e JS puro com Firebase via CDN, sem etapa de build (igual ao restante do projeto).

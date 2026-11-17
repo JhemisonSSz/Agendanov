@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** trocar a página inicial provisória por uma apresentação do Agendanov e criar 3 negócios de demonstração (barbearia, manicure e lash), com botões no `/admin` para criar e limpar essas demonstrações.
+**Goal:** trocar a página inicial provisória por uma apresentação do Agendanov e criar 4 negócios de demonstração (barbearia, manicure, lash e salão), com botões no `/admin` para criar e limpar essas demonstrações.
 
 **Architecture:** os dados das demonstrações ficam em um módulo puro (`public/js/demos.js`) que pode ser testado com `node --test`. O `/admin` usa esse módulo para gravar ou limpar os documentos no Firestore. O `negocio.html` reconhece `demo: true` e mostra uma faixa de aviso. A página inicial é HTML estático com um CSS próprio (`inicio.css`), no visual do portfólio.
 
@@ -13,7 +13,7 @@
 ## Global Constraints
 - Nome do produto: **Agendanov**. Marca do Jhemison: **NOVAA On**. Nenhum texto visível em `public/` pode conter "JhemisonTech" ou "Agenda Fácil". A URL `https://jhemisontech.web.app` pode aparecer só dentro de um `href`.
 - WhatsApp do Jhemison: `5573988045634`.
-- Slugs das demonstrações: `demo-barbearia`, `demo-manicure`, `demo-lash`.
+- Slugs das demonstrações: `demo-barbearia`, `demo-manicure`, `demo-lash`, `demo-salao`.
 - Texto da faixa: `Isto é uma demonstração. Agende à vontade.`
 - Título da página inicial: `Seu cliente agenda sozinho. Você recebe no WhatsApp.`
 - Sem etapa de build e sem npm em produção. O `package.json` serve só para rodar `npm test`.
@@ -23,10 +23,10 @@
 
 ## Review Focus
 1. Visitante abre a demonstração às 23h: o dia de hoje não tem horário, mas os próximos dias precisam ter, inclusive o domingo. As demonstrações abrem todos os dias.
-2. Depois de muitos testes, a demonstração fica sem horário livre. O "Limpar agendamentos de teste" precisa apagar `agendamentos`, `ocupados` e `bloqueios` só dos 3 slugs de demonstração, nunca dos clientes reais.
+2. Depois de muitos testes, a demonstração fica sem horário livre. O "Limpar agendamentos de teste" precisa apagar `agendamentos`, `ocupados` e `bloqueios` só dos 4 slugs de demonstração, nunca dos clientes reais.
 3. Clicar em "Criar/atualizar demonstrações" duas vezes não pode duplicar nada nem dar erro. É `setDoc` com o mesmo ID.
 4. Mensagem de WhatsApp que chega para o Jhemison a partir de uma demonstração: precisa deixar claro que veio de um teste do Agendanov. Num negócio real, a mensagem continua igual à de hoje.
-5. Página inicial no celular (375px): nada pode passar da largura da tela, e os 3 cards ficam um embaixo do outro.
+5. Página inicial no celular (375px): nada pode passar da largura da tela, e os 4 cards ficam um embaixo do outro.
 
 ---
 
@@ -39,7 +39,7 @@
 
 **Interfaces:**
 - Produces:
-  - `demos.js`: `export const WHATS_NOVAA = '5573988045634'`, `export const SLUGS_DEMO = ['demo-barbearia','demo-manicure','demo-lash']`, `export function documentosDemo(): Array<{ slug: string, dados: object }>`. Os `dados` seguem o formato de `negocios/{slug}` usado no `admin.js` (nome, tipo, plano:'demo', whatsapp, endereco, logoUrl:'', cores{primaria,secundaria}, intervaloMinutos:30, horarioFuncionamento, servicos[], profissionais[], ativo:true, demo:true, donoUid:null). Não inclui `criadoEm` (quem grava é o admin).
+  - `demos.js`: `export const WHATS_NOVAA = '5573988045634'`, `export const SLUGS_DEMO = ['demo-barbearia','demo-manicure','demo-lash','demo-salao']`, `export function documentosDemo(): Array<{ slug: string, dados: object }>`. Os `dados` seguem o formato de `negocios/{slug}` usado no `admin.js` (nome, tipo, plano:'demo', whatsapp, endereco, logoUrl:'', cores{primaria,secundaria}, intervaloMinutos:30, horarioFuncionamento, servicos[], profissionais[], ativo:true, demo:true, donoUid:null). Não inclui `criadoEm` (quem grava é o admin).
   - `utils.js`: `mensagemAgendado(negocio, nome, texto): string` e `mensagemContato(negocio): string`.
 
 - [ ] **Step 1: criar `package.json`** com `{"name":"agendanov","private":true,"type":"module","scripts":{"test":"node --test tests/"}}`.
@@ -51,9 +51,9 @@ import test from 'node:test'; import assert from 'node:assert/strict';
 import { documentosDemo, SLUGS_DEMO, WHATS_NOVAA } from '../public/js/demos.js';
 import { slugValido, DIAS, horariosDisponiveis } from '../public/js/utils.js';
 
-test('3 demonstrações com os slugs combinados', () => {
+test('4 demonstrações com os slugs combinados', () => {
   assert.deepEqual(documentosDemo().map(d => d.slug), SLUGS_DEMO);
-  assert.deepEqual(SLUGS_DEMO, ['demo-barbearia', 'demo-manicure', 'demo-lash']);
+  assert.deepEqual(SLUGS_DEMO, ['demo-barbearia', 'demo-manicure', 'demo-lash', 'demo-salao']);
   SLUGS_DEMO.forEach(s => assert.ok(slugValido(s)));
 });
 test('cada demonstração está ativa, marcada como demo e com o WhatsApp do Jhemison', () => {
@@ -108,7 +108,8 @@ test('mensagem de demonstração avisa que é teste do Agendanov', () => {
   - `demo-barbearia`: "Barbearia Exemplo", tipo `barbearia`, cores `#1e3a8a`/`#0f172a`. Serviços: Corte 30min R$35, Barba 30min R$25, Corte + barba 60min R$55, Pigmentação 30min R$30, Sobrancelha 30min R$15. Profissionais: Rafael e Diego.
   - `demo-manicure`: "Studio Unhas Exemplo", tipo `salao`, cores `#db2777`/`#500724`. Serviços: Mão 60min R$30, Pé 60min R$35, Pé e mão 90min R$60, Alongamento em gel 120min R$120, Esmaltação em gel 60min R$50. Profissional: Camila.
   - `demo-lash`: "Lash Exemplo", tipo `salao`, cores `#9d6b9f`/`#3b2340`. Serviços: Fio a fio 120min R$130, Volume brasileiro 120min R$150, Manutenção 60min R$80, Lash lifting 60min R$90, Design de sobrancelha 30min R$35. Profissional: Juliana.
-  - Horário (as 3 iguais): seg a sáb `['09:00','19:00']`, dom `['09:00','13:00']`. Endereço: `Itamaraju – BA (demonstração)`.
+  - `demo-salao`: "Salão Exemplo", tipo `salao`, cores `#b45309`/`#451a03`. Serviços: Corte feminino 60min R$70, Escova 60min R$45, Hidratação 60min R$60, Coloração 120min R$150, Progressiva 180min R$220. Profissionais: Patrícia e Larissa.
+  - Horário (as 4 iguais): seg a sáb `['09:00','19:00']`, dom `['09:00','13:00']`. Endereço: `Itamaraju – BA (demonstração)`.
   - IDs fixos e legíveis, por exemplo `corte`, `barba`, `rafael`.
 - [ ] **Step 5: trocar em `negocio.js`** os dois textos montados na mão (linhas 83 e 230-231) por `U.mensagemContato(n)` e `U.mensagemAgendado(negocio, nome, texto)`.
 - [ ] **Step 6: rodar `npm test`.** Esperado: todos os testes PASSAM.
@@ -137,9 +138,9 @@ test('mensagem de demonstração avisa que é teste do Agendanov', () => {
 - Consumes: `documentosDemo()` e `SLUGS_DEMO` de `demos.js`.
 - Produces: `async function criarDemos(): Promise<void>` e `async function limparDemos(): Promise<number>` (devolve quantos documentos apagou), ambas em `admin.js`.
 
-- [ ] **Step 1:** adicionar ao HTML a seção "Demonstrações", com o texto "Barbearia, manicure e lash para mostrar o sistema.", os links para os 3 sites, os botões `#btn-criar-demos` e `#btn-limpar-demos` (`btn-perigo`) e `<p id="demos-msg" class="muted">`.
+- [ ] **Step 1:** adicionar ao HTML a seção "Demonstrações", com o texto "Barbearia, manicure, lash e salão para mostrar o sistema.", os links para os 4 sites, os botões `#btn-criar-demos` e `#btn-limpar-demos` (`btn-perigo`) e `<p id="demos-msg" class="muted">`.
 - [ ] **Step 2:** `criarDemos`: para cada item de `documentosDemo()`, `setDoc(doc(db,'negocios',slug), {...dados, criadoEm: serverTimestamp()})`. Ao terminar, mostrar "Demonstrações prontas." e chamar `carregarNegocios()`.
-- [ ] **Step 3:** `limparDemos`: pedir `confirm('Apagar todos os agendamentos e bloqueios das 3 demonstrações?')`. Para cada slug de `SLUGS_DEMO` e cada subcoleção (`agendamentos`, `ocupados`, `bloqueios`), fazer `getDocs` e apagar em `writeBatch`, com no máximo 450 por lote. Só usa `SLUGS_DEMO`, nunca a lista de negócios. Ao terminar, mostrar "N registros apagados.".
+- [ ] **Step 3:** `limparDemos`: pedir `confirm('Apagar todos os agendamentos e bloqueios das 4 demonstrações?')`. Para cada slug de `SLUGS_DEMO` e cada subcoleção (`agendamentos`, `ocupados`, `bloqueios`), fazer `getDocs` e apagar em `writeBatch`, com no máximo 450 por lote. Só usa `SLUGS_DEMO`, nunca a lista de negócios. Ao terminar, mostrar "N registros apagados.".
 - [ ] **Step 4:** desabilitar o botão enquanto ele trabalha. Em caso de erro, mostrar `'Erro: ' + err.message` em `#demos-msg`.
 - [ ] **Step 5: verificação.** `node --check public/js/admin.js` não pode acusar erro de sintaxe. O teste de verdade (com login) é feito pelo Jhemison na Task 5.
 - [ ] **Step 6: commit** `Botões de demonstração no admin`.
@@ -167,7 +168,7 @@ assert.match(html, /href="\/painel"/);
 assert.match(html, /name="viewport"/);
 ```
 - [ ] **Step 2: rodar `npm test`.** Esperado: FALHA no título.
-- [ ] **Step 3: escrever `index.html` e `inicio.css`** seguindo a spec: topo (logo de texto "📅 Agendanov" com ícone SVG de calendário de traço fino azul, título, subtítulo, botão "Quero no meu negócio"), 4 vantagens com ícones SVG de traço fino, "Experimente como cliente" (3 cards com a cor de cada demonstração, ícone, nome e "Testar agendamento →"), "Como funciona" em 3 passos e rodapé ("Me chama no WhatsApp", "Acessar meu painel", "feito por NOVAA On" com link para `https://jhemisontech.web.app`). Mensagem pronta do WhatsApp: `Olá! Vi o Agendanov e quero agendamento online no meu negócio.` (com encode na URL). Incluir `<meta name="description">` e o title `Agendanov | Agendamento online pelo WhatsApp`. O CSS usa os tokens das Global Constraints, as manchas `.mancha` com `position: fixed` e `@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }`. Não carregar o `style.css`.
+- [ ] **Step 3: escrever `index.html` e `inicio.css`** seguindo a spec: topo (logo de texto "📅 Agendanov" com ícone SVG de calendário de traço fino azul, título, subtítulo, botão "Quero no meu negócio"), 4 vantagens com ícones SVG de traço fino, "Experimente como cliente" (4 cards com a cor de cada demonstração, ícone, nome e "Testar agendamento →"), "Como funciona" em 3 passos e rodapé ("Me chama no WhatsApp", "Acessar meu painel", "feito por NOVAA On" com link para `https://jhemisontech.web.app`). Mensagem pronta do WhatsApp: `Olá! Vi o Agendanov e quero agendamento online no meu negócio.` (com encode na URL). Incluir `<meta name="description">` e o title `Agendanov | Agendamento online pelo WhatsApp`. O CSS usa os tokens das Global Constraints, as manchas `.mancha` com `position: fixed` e `@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }`. Não carregar o `style.css`.
 - [ ] **Step 4: rodar `npm test`.** Esperado: PASSA.
 - [ ] **Step 5: verificar no navegador.** Abrir `public/index.html` servido localmente (ver Task 5) em desktop e em 375px. Esperado: sem rolagem horizontal (`document.documentElement.scrollWidth <= innerWidth`), cards em 1 coluna no celular e sem erros no console. Tirar prints.
 - [ ] **Step 6: commit** `Página inicial do Agendanov`.
@@ -182,4 +183,4 @@ assert.match(html, /name="viewport"/);
 - [ ] **Step 2:** rodar `npm test`. Esperado: tudo PASSA.
 - [ ] **Step 3: commit** `Renomeia para Agendanov e atualiza README` e `git push`.
 - [ ] **Step 4: o Jhemison faz** o deploy (`firebase deploy --project seuagendamentofacil --only hosting`), entra no `/admin` e clica em "Criar/atualizar demonstrações".
-- [ ] **Step 5: conferir no ar:** abrir `/`, `/demo-barbearia`, `/demo-manicure` e `/demo-lash`. Esperado: a faixa aparece, os serviços e horários listam e as cores mudam por demonstração. Fazer 1 agendamento de teste, ver o botão de WhatsApp com a mensagem da demonstração e pedir ao Jhemison para clicar em "Limpar agendamentos de teste".
+- [ ] **Step 5: conferir no ar:** abrir `/`, `/demo-barbearia`, `/demo-manicure`, `/demo-lash` e `/demo-salao`. Esperado: a faixa aparece, os serviços e horários listam e as cores mudam por demonstração. Fazer 1 agendamento de teste, ver o botão de WhatsApp com a mensagem da demonstração e pedir ao Jhemison para clicar em "Limpar agendamentos de teste".
