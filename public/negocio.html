@@ -4,6 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Agendamento online</title>
+  <meta name="description" content="Escolha o serviço, o profissional e o horário. O agendamento é confirmado na hora.">
+  <!-- Prévia quando o link é enviado no WhatsApp. Igual para todos os negócios:
+       uma prévia com o nome e a logo de cada um exigiria Cloud Functions (plano Blaze). -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Agende seu horário online">
+  <meta property="og:description" content="Escolha o serviço, o profissional e o horário. Leva menos de um minuto.">
+  <meta property="og:image" content="https://seuagendamentofacil.web.app/img/og-agendamento.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -53,8 +62,8 @@
               <input id="cliente-nome" required maxlength="80" autocomplete="name">
             </label>
             <label>WhatsApp
-              <input id="cliente-telefone" required type="tel" maxlength="20"
-                     placeholder="(11) 99999-9999" autocomplete="tel">
+              <input id="cliente-telefone" required type="tel" inputmode="tel" maxlength="20"
+                     placeholder="(73) 99999-9999" autocomplete="tel">
             </label>
             <p id="resumo" class="resumo">Escolha serviço, profissional e horário.</p>
             <p id="erro-agendar" class="erro"></p>
@@ -68,6 +77,11 @@
         <h2>Agendamento confirmado!</h2>
         <p id="sucesso-texto"></p>
         <p><a id="sucesso-whats" class="btn btn-whats" target="_blank" rel="noopener">Avisar pelo WhatsApp</a></p>
+        <p class="muted calendario-titulo">Salve o horário no seu calendário:</p>
+        <p class="calendario">
+          <a id="sucesso-google" class="btn btn-sec" target="_blank" rel="noopener">Google Agenda</a>
+          <a id="sucesso-ics" class="btn btn-sec" download="agendamento.ics">iPhone e outros</a>
+        </p>
         <p><button type="button" class="btn btn-sec" onclick="location.reload()">Fazer outro agendamento</button></p>
       </section>
     </main>

@@ -4,7 +4,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 import {
   doc, getDoc, getDocs, collection, query, where, updateDoc, deleteDoc, writeBatch,
-  setDoc, serverTimestamp
+  setDoc, serverTimestamp, onSnapshot, arrayUnion
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import * as U from './utils.js';
 
@@ -34,7 +34,7 @@ $('btn-esqueci').onclick = async () => {
   }
 };
 
-$('btn-sair').onclick = () => signOut(auth);
+$('btn-sair').onclick = () => { pararAgenda(); signOut(auth); };
 
 onAuthStateChanged(auth, async user => {
   if (!user) return mostrarTela('tela-login');
@@ -81,40 +81,83 @@ function abrirAba(nome) {
   document.querySelectorAll('.aba').forEach(b => b.classList.toggle('ativa', b.dataset.aba === nome));
   document.querySelectorAll('.aba-conteudo').forEach(s => s.classList.toggle('oculto', s.id !== `aba-${nome}`));
   if (nome === 'agenda') carregarAgenda();
+  else pararAgenda(); // fora da aba Agenda, para de escutar o banco
   if (nome === 'bloqueios') abrirBloqueios();
   if (nome === 'servicos') crudServicos.carregar();
-  if (nome === 'profissionais') crudProfissionais.carregar();
+  if (nome === 'profissionais') { prepararFormProfissional(); crudProfissionais.carregar(); }
   if (nome === 'config') preencherConfig();
 }
 
 // ---------- Agenda ----------
+// A lista se atualiza sozinha: quando um cliente agenda, o horário aparece sem recarregar.
+// Cancelados ficam no histórico (coleção "cancelados") e aparecem apagados na lista.
 $('agenda-data').value = U.hojeISO();
 $('agenda-data').addEventListener('change', carregarAgenda);
 
-async function carregarAgenda() {
-  const data = $('agenda-data').value;
-  const box = $('lista-agenda');
-  box.innerHTML = '<p class="muted">Carregando...</p>';
-  $('agenda-resumo').textContent = '';
+let pararAgenda = () => {};
+let ativos = [];
+let cancelados = [];
 
-  const snap = await getDocs(query(
-    collection(db, 'negocios', negocioId, 'agendamentos'),
-    where('data', '==', data)
-  ));
-  const itens = snap.docs
-    .map(d => ({ id: d.id, ...d.data() }))
-    .sort((a, b) => a.hora.localeCompare(b.hora) || a.profissionalNome.localeCompare(b.profissionalNome));
+function carregarAgenda() {
+  pararAgenda();
+  const data = $('agenda-data').value;
+  $('lista-agenda').innerHTML = '<p class="muted">Carregando...</p>';
+  $('agenda-resumo').textContent = '';
+  ativos = [];
+  cancelados = [];
+
+  const pronto = { ativos: false, cancelados: false };
+  const ouvir = (colecao, chave) => onSnapshot(
+    query(collection(db, 'negocios', negocioId, colecao), where('data', '==', data)),
+    snap => {
+      const lista = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      if (chave === 'ativos') ativos = lista; else cancelados = lista;
+      pronto[chave] = true;
+      if (pronto.ativos && pronto.cancelados) renderAgenda(data);
+    },
+    err => {
+      console.error(err);
+      $('lista-agenda').innerHTML = '<p class="erro">Não foi possível carregar a agenda. Recarregue a página.</p>';
+    }
+  );
+  const pararAtivos = ouvir('agendamentos', 'ativos');
+  const pararCancelados = ouvir('cancelados', 'cancelados');
+  pararAgenda = () => { pararAtivos(); pararCancelados(); pararAgenda = () => {}; };
+}
+
+function renderAgenda(data) {
+  const box = $('lista-agenda');
+  const itens = [
+    ...ativos.map(a => ({ a, cancelado: false })),
+    ...cancelados.map(a => ({ a, cancelado: true }))
+  ].sort((x, y) => x.a.hora.localeCompare(y.a.hora)
+    || Number(x.cancelado) - Number(y.cancelado)
+    || String(x.a.profissionalNome).localeCompare(String(y.a.profissionalNome)));
 
   if (!itens.length) {
+    $('agenda-resumo').textContent = '';
     box.innerHTML = '<p class="muted">Nenhum agendamento neste dia.</p>';
     return;
   }
 
-  const total = itens.reduce((soma, a) => soma + (Number(a.preco) || 0), 0);
+  const total = ativos.reduce((soma, a) => soma + (Number(a.preco) || 0), 0);
   $('agenda-resumo').textContent =
-    `${itens.length} agendamento(s) em ${U.formatarData(data)} · previsto ${U.moeda(total)}`;
+    `${ativos.length} agendamento(s) em ${U.formatarData(data)} · previsto ${U.moeda(total)}`
+    + (cancelados.length ? ` · ${cancelados.length} cancelado(s)` : '');
 
-  box.innerHTML = itens.map(a => `
+  const linkSite = `${location.origin}/${negocioId}`;
+  box.innerHTML = itens.map(({ a, cancelado }) => cancelado ? `
+    <div class="item item-cancelado">
+      <div class="item-hora">${U.esc(a.hora)}</div>
+      <div class="item-info">
+        <strong>${U.esc(a.clienteNome)} <span class="selo selo-off">cancelado</span></strong>
+        <span class="muted">${U.esc(a.servicoNome)} · ${U.esc(a.profissionalNome)}</span>
+      </div>
+      <div class="item-acoes">
+        <a class="btn btn-whats btn-pequeno" target="_blank" rel="noopener"
+           href="${U.esc(U.linkWhats(a.clienteTelefone, U.mensagemCancelamento(negocio, a, linkSite)))}">Avisar cliente</a>
+      </div>
+    </div>` : `
     <div class="item">
       <div class="item-hora">${U.esc(a.hora)}</div>
       <div class="item-info">
@@ -130,18 +173,30 @@ async function carregarAgenda() {
     </div>`).join('');
 
   box.querySelectorAll('[data-cancelar]').forEach(b => {
-    b.onclick = () => cancelarAgendamento(itens.find(i => i.id === b.dataset.cancelar));
+    b.onclick = () => cancelarAgendamento(ativos.find(i => i.id === b.dataset.cancelar), b);
   });
 }
 
-async function cancelarAgendamento(a) {
-  if (!confirm(`Cancelar o horário de ${a.clienteNome} às ${a.hora}? O horário volta a ficar livre.`)) return;
-  // Apaga o agendamento e libera todos os horários que ele ocupava
-  const batch = writeBatch(db);
-  batch.delete(doc(db, 'negocios', negocioId, 'agendamentos', a.id));
-  (a.slots || [a.id]).forEach(s => batch.delete(doc(db, 'negocios', negocioId, 'ocupados', s)));
-  await batch.commit();
-  carregarAgenda();
+// Guarda o agendamento no histórico de cancelados, apaga o original e libera os horários.
+// (O original precisa sair: o ID dele é o horário, e outro cliente pode querer marcar ali.)
+async function cancelarAgendamento(a, botao) {
+  if (!a) return;
+  if (!confirm(`Cancelar o horário de ${a.clienteNome} às ${a.hora}? O horário volta a ficar livre e depois você pode avisar o cliente pelo WhatsApp.`)) return;
+  botao.disabled = true;
+  try {
+    const { id, ...dados } = a;
+    const batch = writeBatch(db);
+    batch.set(doc(collection(db, 'negocios', negocioId, 'cancelados')), {
+      ...dados, agendamentoId: id, status: 'cancelado', canceladoEm: serverTimestamp()
+    });
+    batch.delete(doc(db, 'negocios', negocioId, 'agendamentos', id));
+    (a.slots || [id]).forEach(s => batch.delete(doc(db, 'negocios', negocioId, 'ocupados', s)));
+    await batch.commit(); // a lista se atualiza sozinha
+  } catch (err) {
+    console.error(err);
+    botao.disabled = false;
+    alert('Não foi possível cancelar. Tente de novo.');
+  }
 }
 
 // ---------- Folgas e bloqueios ----------
@@ -233,9 +288,10 @@ formB.addEventListener('submit', async e => {
         where('data', '==', data)
       ));
       const jaOcupados = new Set(snap.docs.map(d => d.id));
-      const horas = U.gerarSlotsDoDia(negocio, data).filter(h => h >= horaInicio && h < horaFim);
 
       for (const p of alvo) {
+        // Cada profissional pode ter horário próprio
+        const horas = U.gerarSlotsDoDia(negocio, data, p).filter(h => h >= horaInicio && h < horaFim);
         for (const hora of horas) {
           const id = U.idSlot(p.id, data, hora);
           if (jaOcupados.has(id)) { pulados++; continue; }
@@ -279,6 +335,31 @@ formB.addEventListener('submit', async e => {
     btn.disabled = false;
   }
 });
+
+// Um profissional cadastrado depois também entra nas folgas marcadas para "Todos os profissionais"
+async function aplicarBloqueiosDeTodos(prof) {
+  const hoje = U.hojeISO();
+  const snap = await getDocs(query(
+    collection(db, 'negocios', negocioId, 'bloqueios'),
+    where('dataFim', '>=', hoje)
+  ));
+  const operacoes = [];
+  for (const d of snap.docs) {
+    const b = d.data();
+    if (b.profissionalId !== 'todos') continue;
+    for (const data of U.datasEntre(b.dataInicio < hoje ? hoje : b.dataInicio, b.dataFim)) {
+      const horas = U.gerarSlotsDoDia(negocio, data, prof)
+        .filter(h => b.diaInteiro || (h >= b.horaInicio && h < b.horaFim));
+      for (const hora of horas) {
+        operacoes.push(batch => batch.set(
+          doc(db, 'negocios', negocioId, 'ocupados', U.idSlot(prof.id, data, hora)),
+          { data, hora, profissionalId: prof.id, bloqueioId: d.id }
+        ));
+      }
+    }
+  }
+  await gravarEmLotes(operacoes);
+}
 
 async function carregarBloqueios() {
   const box = $('lista-bloqueios');
@@ -326,7 +407,10 @@ async function carregarBloqueios() {
 // ---------- CRUD genérico (serviços e profissionais) ----------
 // Os itens ficam num array dentro do documento do negócio (negocio.servicos,
 // negocio.profissionais). Isso economiza leituras: o site público carrega tudo de uma vez.
-function criarCrud({ campo, formId, listaId, lerForm, preencherForm, renderLinha }) {
+// Erro de preenchimento: a mensagem aparece para o dono como está
+class ErroDoFormulario extends Error {}
+
+function criarCrud({ campo, formId, listaId, lerForm, preencherForm, renderLinha, aoAdicionar }) {
   const form = $(formId);
   const btnSalvar = form.querySelector('button[type="submit"]');
   const btnCancelar = form.querySelector('[data-cancelar-edicao]');
@@ -359,13 +443,18 @@ function criarCrud({ campo, formId, listaId, lerForm, preencherForm, renderLinha
         const id = editando;
         await salvarLista(lista => lista.map(i => (i.id === id ? { ...i, ...dados } : i)));
       } else {
-        await salvarLista(lista => [...lista, { id: U.novoId(lista), ...dados, ativo: true }]);
+        let novo;
+        await salvarLista(lista => {
+          novo = { id: U.novoId(lista), ...dados, ativo: true };
+          return [...lista, novo];
+        });
+        if (aoAdicionar) await aoAdicionar(novo);
       }
       sairDaEdicao();
       carregar();
     } catch (err) {
       console.error(err);
-      alert('Não foi possível salvar. Tente novamente.');
+      alert(err instanceof ErroDoFormulario ? err.message : 'Não foi possível salvar. Tente novamente.');
     } finally {
       btnSalvar.disabled = false;
     }
@@ -430,14 +519,84 @@ const crudServicos = criarCrud({
     <span class="muted">${Number(i.duracao)} min · ${U.moeda(i.preco)}</span>`
 });
 
+// ---------- Dias da semana (usado no horário do negócio e no horário próprio do profissional) ----------
+function renderDias(containerId, horario) {
+  $(containerId).innerHTML = U.DIAS.map(d => {
+    const faixa = horario?.[d];
+    return `
+      <div class="dia" data-dia="${d}">
+        <label><input type="checkbox" data-aberto ${faixa ? 'checked' : ''}> ${U.NOMES_DIAS[d]}</label>
+        <input type="time" data-abre value="${faixa?.[0] || '09:00'}" aria-label="Abre às">
+        <input type="time" data-fecha value="${faixa?.[1] || '18:00'}" aria-label="Fecha às">
+      </div>`;
+  }).join('');
+}
+
+// Lê os dias da tela: { horario, erro }
+function lerDias(containerId) {
+  const horario = {};
+  let erro = '';
+  $(containerId).querySelectorAll('.dia').forEach(linha => {
+    const aberto = linha.querySelector('[data-aberto]').checked;
+    const abre = linha.querySelector('[data-abre]').value;
+    const fecha = linha.querySelector('[data-fecha]').value;
+    if (aberto && (!abre || !fecha || abre >= fecha)) erro = `Confira o horário de ${U.NOMES_DIAS[linha.dataset.dia]}.`;
+    horario[linha.dataset.dia] = aberto ? [abre, fecha] : null;
+  });
+  return { horario, erro };
+}
+
+// ---------- Profissionais: serviços que faz e horário próprio ----------
+const formProf = $('form-profissional');
+
+function prepararFormProfissional(item = null) {
+  const marcados = new Set(item?.servicos || []);
+  const servicos = [...(negocio.servicos || [])].sort((a, b) => String(a.nome).localeCompare(String(b.nome)));
+  $('prof-servicos').innerHTML = servicos.length
+    ? servicos.map(s => `
+      <label class="check"><input type="checkbox" value="${U.esc(s.id)}" ${marcados.has(s.id) ? 'checked' : ''}> ${U.esc(s.nome)}</label>`).join('')
+    : '<p class="muted">Cadastre os serviços primeiro.</p>';
+  formProf.elements.horarioProprio.checked = Boolean(item?.horario);
+  renderDias('prof-dias', item?.horario || negocio.horarioFuncionamento || U.HORARIO_PADRAO);
+  $('prof-dias').classList.toggle('oculto', !item?.horario);
+}
+
+formProf.elements.horarioProprio.addEventListener('change', e => {
+  $('prof-dias').classList.toggle('oculto', !e.target.checked);
+});
+// "Cancelar edição" e "Adicionar" limpam o formulário: volta ao estado inicial
+formProf.addEventListener('reset', () => setTimeout(() => prepararFormProfissional()));
+
+function nomesDosServicos(ids) {
+  const mapa = new Map((negocio.servicos || []).map(s => [s.id, s.nome]));
+  return ids.map(id => mapa.get(id)).filter(Boolean);
+}
+
 const crudProfissionais = criarCrud({
   campo: 'profissionais',
   formId: 'form-profissional',
   listaId: 'lista-profissionais',
-  lerForm: el => ({ nome: el.nome.value.trim() }),
-  preencherForm: (el, i) => { el.nome.value = i.nome; },
-  renderLinha: i => `
-    <strong>${U.esc(i.nome)} ${i.ativo === false ? '<span class="selo selo-off">oculto</span>' : ''}</strong>`
+  lerForm: el => {
+    const servicos = [...$('prof-servicos').querySelectorAll('input:checked')].map(i => i.value);
+    let horario = null;
+    if (el.horarioProprio.checked) {
+      const lido = lerDias('prof-dias');
+      if (lido.erro) throw new ErroDoFormulario(lido.erro);
+      horario = lido.horario;
+    }
+    return { nome: el.nome.value.trim(), servicos, horario };
+  },
+  preencherForm: (el, i) => {
+    el.nome.value = i.nome;
+    prepararFormProfissional(i);
+  },
+  renderLinha: i => {
+    const faz = nomesDosServicos(i.servicos || []);
+    return `
+    <strong>${U.esc(i.nome)} ${i.ativo === false ? '<span class="selo selo-off">oculto</span>' : ''}</strong>
+    <span class="muted">${faz.length ? 'Faz: ' + U.esc(faz.join(', ')) : 'Faz todos os serviços'}${i.horario ? ' · horário próprio' : ''}</span>`;
+  },
+  aoAdicionar: novo => aplicarBloqueiosDeTodos(novo)
 });
 
 // ---------- Configurações ----------
@@ -450,33 +609,59 @@ function preencherConfig() {
   el.corPrimaria.value = negocio.cores?.primaria || '#2563eb';
   el.corSecundaria.value = negocio.cores?.secundaria || '#0f172a';
   el.intervaloMinutos.value = String(negocio.intervaloMinutos || 30);
+  el.diasAFrente.value = String(negocio.diasAFrente || U.DIAS_A_FRENTE_PADRAO);
 
-  const horario = negocio.horarioFuncionamento || U.HORARIO_PADRAO;
-  $('dias-semana').innerHTML = U.DIAS.map(d => {
-    const faixa = horario[d];
-    return `
-      <div class="dia" data-dia="${d}">
-        <label><input type="checkbox" data-aberto ${faixa ? 'checked' : ''}> ${U.NOMES_DIAS[d]}</label>
-        <input type="time" data-abre value="${faixa?.[0] || '09:00'}" aria-label="Abre às">
-        <input type="time" data-fecha value="${faixa?.[1] || '18:00'}" aria-label="Fecha às">
-      </div>`;
-  }).join('');
+  renderDias('dias-semana', negocio.horarioFuncionamento || U.HORARIO_PADRAO);
   $('config-msg').textContent = '';
+}
+
+// Troca de intervalo (ex.: de 1 hora para 30 min) sem abrir brecha para agendamento duplo.
+// Cada horário ocupado na grade antiga passa a ocupar também os horários da grade nova
+// que caem por cima dele. Os novos horários ganham o mesmo agendamento ou bloqueio,
+// então cancelar o agendamento ou remover o bloqueio continua liberando tudo.
+async function ajustarOcupadosAoIntervalo(passoAntigo, novoNegocio) {
+  const snap = await getDocs(query(
+    collection(db, 'negocios', negocioId, 'ocupados'),
+    where('data', '>=', U.hojeISO())
+  ));
+  const existentes = new Set(snap.docs.map(d => d.id));
+  const passoNovo = Number(novoNegocio.intervaloMinutos) || 30;
+  const profs = new Map((novoNegocio.profissionais || []).map(p => [p.id, p]));
+  const operacoes = [];
+  const novosPorAgendamento = new Map();
+
+  for (const d of snap.docs) {
+    const o = d.data();
+    const grade = U.gerarSlotsDoDia(novoNegocio, o.data, profs.get(o.profissionalId) || null);
+    for (const hora of U.slotsSobrepostos(grade, passoNovo, o.hora, passoAntigo)) {
+      const id = U.idSlot(o.profissionalId, o.data, hora);
+      if (existentes.has(id)) continue;
+      existentes.add(id);
+      const novo = { data: o.data, hora, profissionalId: o.profissionalId };
+      if (o.agendamentoId) {
+        novo.agendamentoId = o.agendamentoId;
+        if (!novosPorAgendamento.has(o.agendamentoId)) novosPorAgendamento.set(o.agendamentoId, []);
+        novosPorAgendamento.get(o.agendamentoId).push(id);
+      }
+      if (o.bloqueioId) novo.bloqueioId = o.bloqueioId;
+      operacoes.push(batch => batch.set(doc(db, 'negocios', negocioId, 'ocupados', id), novo));
+    }
+  }
+  // O agendamento guarda a lista dos seus horários (o cancelamento libera todos eles)
+  for (const [agendamentoId, ids] of novosPorAgendamento) {
+    operacoes.push(batch => batch.update(
+      doc(db, 'negocios', negocioId, 'agendamentos', agendamentoId), { slots: arrayUnion(...ids) }
+    ));
+  }
+  await gravarEmLotes(operacoes);
+  return operacoes.length;
 }
 
 $('form-config').addEventListener('submit', async e => {
   e.preventDefault();
   const el = e.target.elements;
 
-  const horarioFuncionamento = {};
-  let erro = '';
-  document.querySelectorAll('#dias-semana .dia').forEach(linha => {
-    const aberto = linha.querySelector('[data-aberto]').checked;
-    const abre = linha.querySelector('[data-abre]').value;
-    const fecha = linha.querySelector('[data-fecha]').value;
-    if (aberto && (!abre || !fecha || abre >= fecha)) erro = `Confira o horário de ${U.NOMES_DIAS[linha.dataset.dia]}.`;
-    horarioFuncionamento[linha.dataset.dia] = aberto ? [abre, fecha] : null;
-  });
+  const { horario: horarioFuncionamento, erro } = lerDias('dias-semana');
   if (erro) return ($('config-msg').textContent = erro);
 
   const dados = {
@@ -486,10 +671,18 @@ $('form-config').addEventListener('submit', async e => {
     logoUrl: el.logoUrl.value.trim(),
     cores: { primaria: el.corPrimaria.value, secundaria: el.corSecundaria.value },
     intervaloMinutos: Number(el.intervaloMinutos.value),
+    diasAFrente: Number(el.diasAFrente.value),
     horarioFuncionamento
   };
 
+  const btn = e.target.querySelector('button[type="submit"]');
+  btn.disabled = true;
   try {
+    const passoAntigo = Number(negocio.intervaloMinutos) || 30;
+    if (dados.intervaloMinutos !== passoAntigo) {
+      $('config-msg').textContent = 'Ajustando os horários já ocupados ao novo intervalo...';
+      await ajustarOcupadosAoIntervalo(passoAntigo, { ...negocio, ...dados });
+    }
     await updateDoc(doc(db, 'negocios', negocioId), dados);
     negocio = { ...negocio, ...dados };
     await carregarNegocio();
@@ -497,5 +690,7 @@ $('form-config').addEventListener('submit', async e => {
   } catch (err) {
     console.error(err);
     $('config-msg').textContent = 'Erro ao salvar. Tente novamente.';
+  } finally {
+    btn.disabled = false;
   }
 });

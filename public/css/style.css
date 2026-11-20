@@ -73,6 +73,16 @@ body {
 .resumo { background: var(--fundo); padding: 12px; border-radius: 8px; }
 .sucesso { text-align: center; }
 .sucesso .icone { font-size: 2.5rem; }
+.calendario-titulo { margin-bottom: 4px; }
+.calendario { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+
+/* Agenda do painel: cancelados ficam apagados, para não confundir com os ativos */
+.item-cancelado { opacity: .6; }
+.item-cancelado .item-hora { text-decoration: line-through; }
+
+/* Profissional: horário próprio e serviços que faz */
+.servicos-prof { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 4px 12px; margin-bottom: 12px; }
+.servicos-prof label { margin: 0; font-weight: 400; }
 
 /* Botão redondo, só com o ícone; o site público ganha espaço embaixo para ele nunca cobrir o conteúdo */
 .whats-flutuante {

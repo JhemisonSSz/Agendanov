@@ -33,8 +33,10 @@ public/
 ```
 negocios/{slug}                 config pública: nome, cores, horários, ativo, plano
                                 + servicos: [{ id, nome, duracao, preco, ativo }]
-                                + profissionais: [{ id, nome, ativo }]
+                                + profissionais: [{ id, nome, ativo, servicos?, horario? }]
+                                + diasAFrente (até quantos dias o cliente pode marcar; padrão 60)
   agendamentos/{slotId}         dados do cliente (PRIVADO)
+  cancelados/{id}               histórico de agendamentos cancelados (PRIVADO)
   ocupados/{slotId}             só "horário pego" (público, sem dados pessoais)
   bloqueios/{id}                folgas e horários travados pelo dono (privado)
 usuarios/{uid}                  papel: "dono" | "superadmin", negocioId
@@ -104,16 +106,33 @@ A página inicial (`/`) tem 4 negócios de teste para o visitante experimentar:
 npm test
 ```
 
-Roda os testes das funções puras (`demos.js`, mensagens do `utils.js`) e confere a página inicial.
+Roda os testes das funções puras (`demos.js` e `utils.js`: horários, profissionais, limites, calendário) e confere a página inicial.
 
 ## Observações
 
-- **Mudar o intervalo** (ex.: de 30 para 15 min) com agendamentos futuros já marcados pode
-  desalinhar os horários. Avise o dono para mudar com a agenda vazia ou com antecedência.
-- **Cancelar** apaga o agendamento e libera os horários. Se quiser histórico, copie o
-  documento para uma coleção `cancelados` antes de apagar.
-- **Spam:** qualquer pessoa pode criar agendamentos (é a ideia). Em produção, ative o
-  **App Check** (reCAPTCHA) para bloquear robôs.
+- **Mudar o intervalo** (ex.: de 1 hora para 30 min): ao salvar, o painel faz cada horário já
+  ocupado na grade antiga ocupar também os horários da grade nova que caem por cima dele.
+  Assim não abre brecha para dois clientes no mesmo horário.
+- **Cancelar** guarda uma cópia em `cancelados` (aparece riscado na agenda, com o botão
+  "Avisar cliente") e apaga o original, liberando os horários.
+- **Regras de segurança:** o ID de cada horário precisa bater com a data, a hora e o
+  profissional gravados, e o telefone precisa ter pelo menos 10 caracteres.
+- **Profissionais** podem ter horário próprio e uma lista de serviços que fazem
+  (sem lista, fazem todos). Folgas marcadas para "Todos" valem também para quem for
+  cadastrado depois.
+
+## Proteção contra robôs (App Check)
+
+Qualquer pessoa pode criar agendamentos (é a ideia), então um robô poderia ocupar todos os
+horários. O código já está pronto para o App Check com reCAPTCHA v3; falta só a chave:
+
+1. Em https://www.google.com/recaptcha/admin crie um site do tipo **reCAPTCHA v3** com o
+   domínio `seuagendamentofacil.web.app` e copie a **chave do site** e a **chave secreta**.
+2. No console do Firebase: **App Check → Apps → app da Web → reCAPTCHA v3** e cole a chave secreta.
+3. Em `public/js/firebase-config.js`, cole a chave do site em `RECAPTCHA_CHAVE_SITE` e publique.
+4. Espere um dia vendo em **App Check → APIs → Cloud Firestore** se as requisições aparecem
+   como verificadas. Só então clique em **Aplicar** (enforce). Antes disso, aplicar bloquearia
+   todo mundo.
 - A config do Firebase no front **não é segredo**. Quem protege os dados são as regras.
 
 ## Próximos passos sugeridos

@@ -115,6 +115,10 @@
             <div class="linha-form">
               <label>Nome <input name="nome" required maxlength="60" placeholder="Ana"></label>
             </div>
+            <p><strong>Serviços que faz</strong> <span class="muted">(sem nenhum marcado, faz todos)</span></p>
+            <div id="prof-servicos" class="servicos-prof"></div>
+            <label class="check"><input type="checkbox" name="horarioProprio"> Trabalha em horário diferente do negócio</label>
+            <div id="prof-dias" class="oculto"></div>
             <button class="btn" type="submit">Adicionar</button>
             <button class="btn btn-sec oculto" type="button" data-cancelar-edicao>Cancelar edição</button>
           </form>
@@ -150,6 +154,15 @@
                 <option value="30">30 minutos</option>
                 <option value="45">45 minutos</option>
                 <option value="60">1 hora</option>
+              </select>
+            </label>
+            <label>Clientes podem agendar com até
+              <select name="diasAFrente">
+                <option value="15">15 dias de antecedência</option>
+                <option value="30">30 dias de antecedência</option>
+                <option value="60">60 dias de antecedência</option>
+                <option value="90">90 dias de antecedência</option>
+                <option value="180">180 dias de antecedência</option>
               </select>
             </label>
             <div id="dias-semana"></div>

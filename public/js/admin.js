@@ -131,14 +131,14 @@ async function criarDemos() {
   return pulados;
 }
 
-// Apaga os agendamentos, horários ocupados e bloqueios SÓ das demonstrações.
+// Apaga os agendamentos (e cancelados), horários ocupados e bloqueios SÓ das demonstrações.
 // Usa SLUGS_DEMO e nunca a lista de negócios, para não tocar em clientes reais.
 async function limparDemos() {
   let total = 0;
   for (const slug of SLUGS_DEMO) {
     const atual = await getDoc(doc(db, 'negocios', slug));
     if (!podeGravarDemo(atual.exists() ? atual.data() : null)) continue; // é cliente real: não toca
-    for (const sub of ['agendamentos', 'ocupados', 'bloqueios']) {
+    for (const sub of ['agendamentos', 'cancelados', 'ocupados', 'bloqueios']) {
       const docs = (await getDocs(collection(db, 'negocios', slug, sub))).docs;
       for (let i = 0; i < docs.length; i += 450) {
         const lote = writeBatch(db);

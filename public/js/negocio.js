@@ -43,6 +43,7 @@ async function iniciar() {
     renderProfissionais();
 
     $('data').min = U.hojeISO();
+    $('data').max = U.dataMaxima(estado.negocio);
     $('data').value = estado.data;
     $('data').addEventListener('change', e => {
       estado.data = e.target.value;
@@ -106,14 +107,21 @@ function renderServicos() {
   box.querySelectorAll('button').forEach(b => b.onclick = () => selecionar('servico', b.dataset.id));
 }
 
+// Só aparecem os profissionais que fazem o serviço escolhido
+function profissionaisDoServico() {
+  const s = estado.servico;
+  return s ? estado.profissionais.filter(p => U.fazServico(p, s.id)) : estado.profissionais;
+}
+
 function renderProfissionais() {
   const box = $('lista-profissionais');
-  if (!estado.profissionais.length) {
-    box.innerHTML = '<p class="muted">Nenhum profissional disponível no momento.</p>';
+  const lista = profissionaisDoServico();
+  if (!lista.length) {
+    box.innerHTML = '<p class="muted">Nenhum profissional disponível para este serviço.</p>';
     return;
   }
-  box.innerHTML = estado.profissionais.map(p => `
-    <button type="button" class="opcao" data-id="${U.esc(p.id)}">
+  box.innerHTML = lista.map(p => `
+    <button type="button" class="opcao${estado.profissional?.id === p.id ? ' selecionado' : ''}" data-id="${U.esc(p.id)}" aria-pressed="${estado.profissional?.id === p.id}">
       <strong>${U.esc(p.nome)}</strong>
     </button>`).join('');
   box.querySelectorAll('button').forEach(b => b.onclick = () => selecionar('profissional', b.dataset.id));
@@ -124,7 +132,18 @@ function selecionar(tipo, id) {
   estado[tipo] = lista.find(x => x.id === id);
   estado.hora = null;
   const box = $(tipo === 'servico' ? 'lista-servicos' : 'lista-profissionais');
-  box.querySelectorAll('button').forEach(b => b.classList.toggle('selecionado', b.dataset.id === id));
+  box.querySelectorAll('button').forEach(b => {
+    b.classList.toggle('selecionado', b.dataset.id === id);
+    b.setAttribute('aria-pressed', String(b.dataset.id === id));
+  });
+
+  if (tipo === 'servico') {
+    // Troca o serviço: quem não faz esse serviço sai da lista (e da seleção)
+    const podem = profissionaisDoServico();
+    if (estado.profissional && !podem.some(p => p.id === estado.profissional.id)) estado.profissional = null;
+    if (!estado.profissional && podem.length === 1) estado.profissional = podem[0];
+    renderProfissionais();
+  }
   carregarHorarios();
 }
 
@@ -135,6 +154,13 @@ async function carregarHorarios() {
 
   if (!servico || !profissional || !data) {
     box.innerHTML = '<p class="muted">Escolha o serviço e o profissional para ver os horários.</p>';
+    atualizarResumo();
+    return;
+  }
+
+  const maxima = U.dataMaxima(estado.negocio);
+  if (data < U.hojeISO() || data > maxima) {
+    box.innerHTML = `<p class="muted">Escolha um dia entre hoje e ${U.formatarData(maxima)}.</p>`;
     atualizarResumo();
     return;
   }
@@ -152,7 +178,7 @@ async function carregarHorarios() {
     if (busca !== ultimaBusca) return; // o usuário mudou a seleção no meio da busca
 
     const ocupados = new Set(snap.docs.map(d => d.data().hora));
-    const livres = U.horariosDisponiveis(estado.negocio, data, servico.duracao, ocupados);
+    const livres = U.horariosDisponiveis(estado.negocio, data, servico.duracao, ocupados, new Date(), profissional);
 
     if (!livres.length) {
       box.innerHTML = '<p class="muted">Nenhum horário livre neste dia. Tente outra data.</p>';
@@ -187,10 +213,21 @@ async function agendar(e) {
   const { servico, profissional, data, hora } = estado;
   if (!nome || !telefone || !servico || !profissional || !hora) return;
 
+  $('erro-agendar').textContent = '';
+  if (!U.telefoneValido(telefone)) {
+    $('erro-agendar').textContent = 'Confira o WhatsApp: coloque o DDD e o número, por exemplo (73) 99999-9999.';
+    $('cliente-telefone').focus();
+    return;
+  }
+  // Sem internet o Firebase guarda o pedido e só envia depois: melhor avisar já
+  if (navigator.onLine === false) {
+    $('erro-agendar').textContent = 'Você está sem internet. Conecte e tente de novo.';
+    return;
+  }
+
   const btn = $('btn-agendar');
   btn.disabled = true;
   btn.textContent = 'Agendando...';
-  $('erro-agendar').textContent = '';
 
   // Um serviço de 60 min com intervalo de 30 ocupa 2 horários
   const horas = U.blocoDeSlots(estado.negocio, hora, servico.duracao);
@@ -220,9 +257,13 @@ async function agendar(e) {
     mostrarSucesso(nome);
   } catch (err) {
     console.error(err);
-    $('erro-agendar').textContent = 'Esse horário acabou de ser reservado por outra pessoa. Escolha outro, por favor.';
-    estado.hora = null;
-    carregarHorarios();
+    $('erro-agendar').textContent = U.mensagemErroAgendar(err);
+    if (err?.code === 'permission-denied') {
+      estado.hora = null;
+      carregarHorarios();
+    } else {
+      btn.disabled = false;
+    }
   } finally {
     btn.textContent = 'Confirmar agendamento';
   }
@@ -238,6 +279,12 @@ function mostrarSucesso(nome) {
   } else {
     $('sucesso-whats').classList.add('oculto');
   }
+
+  // Botões para o cliente salvar o horário no calendário do celular
+  const ev = U.eventoAgendamento(negocio, servico, profissional, data, hora);
+  $('sucesso-google').href = U.linkGoogleAgenda(ev);
+  const ics = new Blob([U.arquivoIcs(ev)], { type: 'text/calendar;charset=utf-8' });
+  $('sucesso-ics').href = URL.createObjectURL(ics);
 
   $('etapas').classList.add('oculto');
   $('sucesso').classList.remove('oculto');
