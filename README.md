@@ -124,16 +124,26 @@ Roda os testes das funções puras (`demos.js` e `utils.js`: horários, profissi
 ## Proteção contra robôs (App Check)
 
 Qualquer pessoa pode criar agendamentos (é a ideia), então um robô poderia ocupar todos os
-horários. O código já está pronto para o App Check com reCAPTCHA v3; falta só a chave:
+horários. O código usa o App Check com **reCAPTCHA Enterprise** (o reCAPTCHA clássico, v3,
+foi descontinuado pelo Google). O Enterprise só tem a **chave do site**, sem chave secreta:
 
-1. Em https://www.google.com/recaptcha/admin crie um site do tipo **reCAPTCHA v3** com o
-   domínio `agendanov.web.app` e copie a **chave do site** e a **chave secreta**.
-2. No console do Firebase: **App Check → Apps → app da Web → reCAPTCHA v3** e cole a chave secreta.
-3. Em `public/js/firebase-config.js`, cole a chave do site em `RECAPTCHA_CHAVE_SITE` e publique.
+1. No Google Cloud do projeto `agendanov`, em **Security → reCAPTCHA** (Fraud Defense),
+   crie uma chave do tipo **Website** com os domínios `agendanov.web.app` e
+   `agendanov.firebaseapp.com`, sem o desafio "Não sou um robô" (checkbox desligado).
+   Copie a **chave do site**.
+2. No console do Firebase: **App Check → Apps → app da Web → reCAPTCHA Enterprise**,
+   cole a chave do site e salve.
+3. Em `public/js/firebase-config.js`, cole a mesma chave em `RECAPTCHA_CHAVE_SITE` e publique.
 4. Espere um dia vendo em **App Check → APIs → Cloud Firestore** se as requisições aparecem
    como verificadas. Só então clique em **Aplicar** (enforce). Antes disso, aplicar bloquearia
    todo mundo.
-- A config do Firebase no front **não é segredo**. Quem protege os dados são as regras.
+
+O reCAPTCHA Enterprise é gratuito até 10 mil verificações por mês.
+
+## Outras observações
+
+- A config do Firebase e a chave do reCAPTCHA no front **não são segredo**. Quem protege os
+  dados são as regras.
 
 ## Próximos passos sugeridos
 

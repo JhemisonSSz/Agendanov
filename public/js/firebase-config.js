@@ -1,7 +1,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { getFirestore } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { getAuth } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-import { initializeAppCheck, ReCaptchaV3Provider } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js';
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js';
 
 export const firebaseConfig = {
   apiKey: 'AIzaSyBZqB7f5JrWwjjjzZsijDl0NPSfNAZQEJc',
@@ -14,12 +14,13 @@ export const firebaseConfig = {
 
 export const app = initializeApp(firebaseConfig);
 
-// Proteção contra robôs (App Check com reCAPTCHA v3). Desligada enquanto a chave estiver vazia.
+// Proteção contra robôs (App Check com reCAPTCHA Enterprise). Desligada enquanto a chave estiver vazia.
+// A chave do site não é segredo: ela fica visível na página de propósito.
 // Como ligar está no README, em "Proteção contra robôs".
 export const RECAPTCHA_CHAVE_SITE = '';
 if (RECAPTCHA_CHAVE_SITE) {
   initializeAppCheck(app, {
-    provider: new ReCaptchaV3Provider(RECAPTCHA_CHAVE_SITE),
+    provider: new ReCaptchaEnterpriseProvider(RECAPTCHA_CHAVE_SITE),
     isTokenAutoRefreshEnabled: true
   });
 }
