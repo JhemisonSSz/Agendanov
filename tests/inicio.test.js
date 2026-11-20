@@ -6,11 +6,11 @@ import { SLUGS_DEMO, WHATS_NOVAA } from '../public/js/demos.js';
 const html = readFileSync(new URL('../public/index.html', import.meta.url), 'utf8');
 const semHref = html.replace(/href="[^"]*"/g, '');
 
-test('marca: Agendanov e NOVAA On, sem nomes antigos nos textos', () => {
+test('marca: Agendanov e NovJ Digital, sem nomes antigos nos textos', () => {
   assert.doesNotMatch(semHref, /jhemisontech/i);
   assert.doesNotMatch(semHref, /agenda f[aá]cil/i);
   assert.match(html, /Agendanov/);
-  assert.match(html, /NOVAA On/);
+  assert.match(html, /NovJ Digital/);
 });
 
 test('título e chamadas combinados', () => {
