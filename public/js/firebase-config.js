@@ -18,7 +18,7 @@ export const app = initializeApp(firebaseConfig);
 // A chave do site não é segredo: ela fica visível na página de propósito.
 // Como ligar está no README, em "Proteção contra robôs".
 export const RECAPTCHA_CHAVE_SITE = '6LcaaykuAAAAAFNnCg3TuLOR0ru7hBy10Soz1yJ_';
-if (RECAPTCHA_CHAVE_SITE) {6LcaaykuAAAAAFNnCg3TuLOR0ru7hBy10Soz1yJ_
+if (RECAPTCHA_CHAVE_SITE) {
   initializeAppCheck(app, {
     provider: new ReCaptchaEnterpriseProvider(RECAPTCHA_CHAVE_SITE),
     isTokenAutoRefreshEnabled: true
