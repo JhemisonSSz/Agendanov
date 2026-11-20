@@ -4,12 +4,12 @@ import { getAuth } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-aut
 import { initializeAppCheck, ReCaptchaV3Provider } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check.js';
 
 export const firebaseConfig = {
-  apiKey: 'AIzaSyCzb83r863bGP0LyEFdMJ2NFbW7CQJ3cfA',
-  authDomain: 'seuagendamentofacil.firebaseapp.com',
-  projectId: 'seuagendamentofacil',
-  storageBucket: 'seuagendamentofacil.appspot.com',
-  messagingSenderId: '304909404320',
-  appId: '1:304909404320:web:84a59c05743b9677f761c5'
+  apiKey: 'AIzaSyBZqB7f5JrWwjjjzZsijDl0NPSfNAZQEJc',
+  authDomain: 'agendanov.firebaseapp.com',
+  projectId: 'agendanov',
+  storageBucket: 'agendanov.firebasestorage.app',
+  messagingSenderId: '39251128726',
+  appId: '1:39251128726:web:ce19b4eae2b0efc5baedb7'
 };
 
 export const app = initializeApp(firebaseConfig);

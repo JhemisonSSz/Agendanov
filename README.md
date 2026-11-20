@@ -127,7 +127,7 @@ Qualquer pessoa pode criar agendamentos (é a ideia), então um robô poderia oc
 horários. O código já está pronto para o App Check com reCAPTCHA v3; falta só a chave:
 
 1. Em https://www.google.com/recaptcha/admin crie um site do tipo **reCAPTCHA v3** com o
-   domínio `seuagendamentofacil.web.app` e copie a **chave do site** e a **chave secreta**.
+   domínio `agendanov.web.app` e copie a **chave do site** e a **chave secreta**.
 2. No console do Firebase: **App Check → Apps → app da Web → reCAPTCHA v3** e cole a chave secreta.
 3. Em `public/js/firebase-config.js`, cole a chave do site em `RECAPTCHA_CHAVE_SITE` e publique.
 4. Espere um dia vendo em **App Check → APIs → Cloud Firestore** se as requisições aparecem

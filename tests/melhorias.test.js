@@ -61,9 +61,9 @@ test('troca de intervalo: um horário da grade antiga ocupa os horários da grad
 
 test('aviso de cancelamento cita o horário e manda o link para remarcar', () => {
   const ag = { clienteNome: 'Ana', servicoNome: 'Corte', data: SEXTA, hora: '14:30' };
-  assert.equal(U.mensagemCancelamento(negocio, ag, 'https://seuagendamentofacil.web.app/barbearia-do-ze'),
+  assert.equal(U.mensagemCancelamento(negocio, ag, 'https://agendanov.web.app/barbearia-do-ze'),
     'Olá, Ana! Seu horário de Corte em 20/11/2026 às 14:30 na Barbearia do Zé foi cancelado.'
-    + ' Se quiser, marque outro horário por aqui: https://seuagendamentofacil.web.app/barbearia-do-ze');
+    + ' Se quiser, marque outro horário por aqui: https://agendanov.web.app/barbearia-do-ze');
 });
 
 test('calendário: evento com início e fim certos, link do Google e arquivo .ics', () => {
